@@ -2,14 +2,15 @@
 just a little hobby project in which I want to try to generate a mandelbrot set efficiently
 
 ## installation
-- requires an installation of SDL2 on your include path, or provide your own
+- requires an installation of SDL2 on your include path, or provide your own and link in Makefile
 - run ´´´make build´´´ to build the project, ´´´make test´´´ to build and instantly test
 
 ### status
-- draws white resizable window at VSYNC refresh rate
-- draws black ASCII mandelbrot set to command line
+- draws B&W mandelbrot set to a display of arbitrary size, adding one iteration per frame
 
 #### planned
-- make a program that renders a black and white mandelbrot set to a graphical window
 - colour the non-converging regions based on how many iterations it takes to escape bounds
 - try to make the shapes and colours continuous. unsure if shapes require extra work but colours most likely will
+- navigation controls
+- performance optimisation
+- smooth user experience

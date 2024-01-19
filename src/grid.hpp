@@ -12,16 +12,20 @@ public:
 
     MandelbrotGrid();
 
-    void initializeGrid(int width, int height);
+    void initializeGrid(int width, int height, double realLowerBound, double imaginaryLowerBound, double realUpperBound, double imaginaryUpperBound);
 
     void tick();
 
+    int width();
+    int height();
+
     Complex valueAt(int x, int y);
 
-    void testFunction();
+    bool divergesAt(int x, int y);
 
 private:
     int m_width, m_height;
+    Complex lowerBound, upperBound;
     int renderedToX, renderedToY;
 
     Complex mapToComplexPlane(double x, double y);

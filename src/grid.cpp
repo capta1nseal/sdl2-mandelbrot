@@ -9,20 +9,34 @@ MandelbrotGrid::MandelbrotGrid()
 {
     m_width = 1;
     m_height = 1;
+    lowerBound.set(-2.0, -2.0);
+    upperBound.set(2.0, 2.0);
     renderedToX = 0;
     renderedToY = 0;
 }
 
-void MandelbrotGrid::initializeGrid(int width, int height)
+void MandelbrotGrid::initializeGrid(int width, int height, double realLowerBound, double imaginaryLowerBound, double realUpperBound, double imaginaryUpperBound)
 {
     m_width = width;
     m_height = height;
+    lowerBound.set(realLowerBound, imaginaryLowerBound);
+    upperBound.set(realUpperBound, imaginaryUpperBound);
     grid.resize(width * height);
+    grid.assign(width * height, Complex(0.0, 0.0));
 }
 
 void MandelbrotGrid::tick()
 {
+    iterateGrid();
+}
 
+int MandelbrotGrid::width()
+{
+    return m_width;
+}
+int MandelbrotGrid::height()
+{
+    return m_height;
 }
 
 Complex MandelbrotGrid::valueAt(int x, int y)
@@ -30,40 +44,22 @@ Complex MandelbrotGrid::valueAt(int x, int y)
     return grid[x * m_height + y];
 }
 
-void MandelbrotGrid::testFunction()
+bool MandelbrotGrid::divergesAt(int x, int y)
 {
-    for (int i = 0; i < 10000; i++)
-    {
-        iterateGrid();
-    }
-
-    for (int y = 0; y < m_height; y++)
-    {
-        for (int x = 0; x < m_width; x++)
-        {
-            if (valueAt(x, y).magnitude() <= 2)
-            {
-                std::cout << " ";
-            }
-            else
-            {
-                std::cout << "#";
-            }
-        }
-        std::cout << "\n";
-    }
-    
+    return valueAt(x, y).magnitude() > 2;
 }
 
 Complex MandelbrotGrid::mapToComplexPlane(double x, double y)
 {
-    x *= 4.0 / static_cast<double>(m_width - 1);
-    y *= 4.0 / static_cast<double>(m_height - 1);
+    double realRange = upperBound.real - lowerBound.real;
+    double imaginaryRange = upperBound.imaginary - lowerBound.imaginary;
+    x *= realRange / static_cast<double>(m_width - 1);
+    y *= imaginaryRange / static_cast<double>(m_height - 1);
 
-    x -= 2.0;
-    y -= 2.0;
+    x += lowerBound.real;
+    y += lowerBound.imaginary;
 
-    y *= -1.0;
+    y = upperBound.imaginary - (y - lowerBound.imaginary);
 
     return Complex(x, y);
 }
@@ -83,7 +79,7 @@ void MandelbrotGrid::iterateGrid()
             {
                 setValueAt(
                     x, y,
-                    addComplex(grid[x * m_height + y].squareInplace(), mapToComplexPlane(x, y))
+                    addComplex(valueAt(x, y).squareInplace(), mapToComplexPlane(x, y))
                 );
             }
         }

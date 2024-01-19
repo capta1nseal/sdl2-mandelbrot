@@ -31,9 +31,6 @@ void MandelbrotApplication::run()
     isRunning = true;
     draw();
 
-
-    mandelbrotGrid.testFunction();
-
     while (isRunning)
     {
         start = now();
@@ -87,7 +84,7 @@ void MandelbrotApplication::destroySdl()
 
 void MandelbrotApplication::initializeGrid()
 {
-    mandelbrotGrid.initializeGrid(349, 174);
+    mandelbrotGrid.initializeGrid(960, 540, -2.0, -2.0 * 9.0 / 16.0, 2.0, 2.0 * 9.0 / 16.0);
 }
 
 void MandelbrotApplication::handleEvents()
@@ -135,7 +132,12 @@ void MandelbrotApplication::handleEvents()
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
+            {
+                std::cout << "(" << displayWidth << "," << displayHeight << ")\n";
+                double scaleFactor = static_cast<double>(displayHeight) / static_cast<double>(displayWidth);
+                mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -2.0, -2.0 * scaleFactor, 2.0, 2.0 * scaleFactor);
                 break;
+            }
             default:
                 break;
             }
@@ -148,15 +150,29 @@ void MandelbrotApplication::handleEvents()
 
 void MandelbrotApplication::tick()
 {
-    // do update stuff
+    mandelbrotGrid.tick();
 }
 
 void MandelbrotApplication::draw()
 {
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    // do drawing stuff
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+    int width = mandelbrotGrid.width();
+    int height = mandelbrotGrid.height();
+
+    for (int x = 0; x < width; x++)
+    {
+        for (int y = 0; y < height; y++)
+        {
+            if (mandelbrotGrid.divergesAt(x, y))
+            {
+                SDL_RenderDrawPoint(renderer, x, y);
+            }
+        }
+    }
 
     SDL_RenderPresent(renderer);
 }
