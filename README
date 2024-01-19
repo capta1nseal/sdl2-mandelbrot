@@ -6,9 +6,10 @@ just a little hobby project in which I want to try to generate a mandelbrot set 
 - run ´´´make build´´´ to build the project, ´´´make test´´´ to build and instantly test
 
 ### status
-there is no functioning code
+- draws white resizable window at VSYNC refresh rate
+- draws black ASCII mandelbrot set to command line
 
 #### planned
-- make a program that renders a black and white mandelbrot set to some kind of buffer
-- colour the non-black regions based on how many iterations it takes to escape bounds
-- try to make the shapes and colour continuous. unsure if shapes require extra work but colours most likely will
+- make a program that renders a black and white mandelbrot set to a graphical window
+- colour the non-converging regions based on how many iterations it takes to escape bounds
+- try to make the shapes and colours continuous. unsure if shapes require extra work but colours most likely will
