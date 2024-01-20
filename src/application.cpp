@@ -171,7 +171,7 @@ void MandelbrotApplication::draw()
         {
             if (mandelbrotGrid.divergesAt(x, y))
             {
-                colourFactor = (static_cast<double>(mandelbrotGrid.iterationsAt(x, y) + 1) - (log(log(mandelbrotGrid.valueAt(x, y).magnitude())) / log(2.0))) / iterationCount;
+                colourFactor = (static_cast<double>(mandelbrotGrid.iterationsAt(x, y) + 1) - log(log2(mandelbrotGrid.valueAt(x, y).magnitude()))) / iterationCount;
                 colourFactor = colourFactor * (2.0 - colourFactor); // remap the factor, grouping more high values near the boundary
                 alpha = static_cast<int>(colourFactor * 255.0);
                 SDL_SetRenderDrawColor(renderer, alpha, alpha/2, alpha/8, 255);
