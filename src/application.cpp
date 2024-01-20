@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <cmath>
 
 #include <SDL2/SDL.h>
 
@@ -158,10 +159,11 @@ void MandelbrotApplication::draw()
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-
     int width = mandelbrotGrid.width();
     int height = mandelbrotGrid.height();
+    int iterationCount = mandelbrotGrid.getIterationCount();
+    double colourFactor = 0;
+    Uint8 alpha = 0;
 
     for (int x = 0; x < width; x++)
     {
@@ -169,6 +171,10 @@ void MandelbrotApplication::draw()
         {
             if (mandelbrotGrid.divergesAt(x, y))
             {
+                colourFactor = (static_cast<double>(mandelbrotGrid.iterationsAt(x, y) + 1) - (log(log(abs(mandelbrotGrid.valueAt(x, y)))) / log(2.0))) / iterationCount;
+                colourFactor = -1 * colourFactor * (colourFactor - 2.0); // remap the factor, grouping more high values near the boundary
+                alpha = static_cast<int>(colourFactor * 255.0);
+                SDL_SetRenderDrawColor(renderer, alpha, alpha, alpha, 255);
                 SDL_RenderDrawPoint(renderer, x, y);
             }
         }

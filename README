@@ -6,11 +6,12 @@ just a little hobby project in which I want to try to generate a mandelbrot set 
 - run ´´´make build´´´ to build the project, ´´´make test´´´ to build and instantly test
 
 ### status
-- draws B&W mandelbrot set to a display of arbitrary size, adding one iteration per frame
+- draws greyscale mandelbrot set to a display of arbitrary size
+- iteration count is incremented per frame
 
 #### planned
-- colour the non-converging regions based on how many iterations it takes to escape bounds
-- try to make the shapes and colours continuous. unsure if shapes require extra work but colours most likely will
+- make the shapes and colours more continuous
 - navigation controls
 - performance optimisation
+- (related) multithreading
 - smooth user experience

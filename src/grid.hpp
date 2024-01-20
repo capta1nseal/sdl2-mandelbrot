@@ -3,13 +3,11 @@
 
 #include <vector>
 
-#include "complex.hpp"
+#include <complex>
 
 class MandelbrotGrid
 {
 public:
-    std::vector<Complex> grid;
-
     MandelbrotGrid();
 
     void initializeGrid(int width, int height, double realLowerBound, double imaginaryLowerBound, double realUpperBound, double imaginaryUpperBound);
@@ -19,18 +17,28 @@ public:
     int width();
     int height();
 
-    Complex valueAt(int x, int y);
+    std::complex<double> valueAt(int x, int y);
 
     bool divergesAt(int x, int y);
 
+    int getIterationCount();
+
+    int iterationsAt(int x, int y);
+
 private:
+    std::vector<std::complex<double>> grid;
+    std::vector<int> iterationGrid;
+    int iterationCount;
+    int iterationMaximum;
     int m_width, m_height;
-    Complex lowerBound, upperBound;
+    std::complex<double> lowerBound, upperBound;
     int renderedToX, renderedToY;
 
-    Complex mapToComplexPlane(double x, double y);
+    std::complex<double> mapToComplex(double x, double y);
 
-    void setValueAt(int x, int y, Complex value);
+    void setValueAt(int x, int y, std::complex<double> value);
+
+    void incrementIterationGrid(int x, int y);
 
     void iterateGrid();
 
