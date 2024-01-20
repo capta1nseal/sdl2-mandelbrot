@@ -36,5 +36,5 @@ clean:
 	rm -r $(BINDIR)
 
 ifeq "$(MAKECMDGOALS)" ""
--INCLUDE $(DEPS)
+	-INCLUDE $(DEPS)
 endif
