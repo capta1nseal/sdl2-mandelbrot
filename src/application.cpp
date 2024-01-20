@@ -106,6 +106,9 @@ void MandelbrotApplication::handleEvents()
             {
                 displayWidth = event.window.data1;
                 displayHeight = event.window.data2;
+
+                double scaleFactor = static_cast<double>(displayHeight) / static_cast<double>(displayWidth);
+                mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -2.0, -2.0 * scaleFactor, 2.0, 2.0 * scaleFactor);
             }
             break;
         case SDL_KEYDOWN:
@@ -134,9 +137,6 @@ void MandelbrotApplication::handleEvents()
             {
             case SDL_BUTTON_LEFT:
             {
-                std::cout << "(" << displayWidth << "," << displayHeight << ")\n";
-                double scaleFactor = static_cast<double>(displayHeight) / static_cast<double>(displayWidth);
-                mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -2.0, -2.0 * scaleFactor, 2.0, 2.0 * scaleFactor);
                 break;
             }
             default:
@@ -171,10 +171,10 @@ void MandelbrotApplication::draw()
         {
             if (mandelbrotGrid.divergesAt(x, y))
             {
-                colourFactor = (static_cast<double>(mandelbrotGrid.iterationsAt(x, y) + 1) - (log(log(abs(mandelbrotGrid.valueAt(x, y)))) / log(2.0))) / iterationCount;
-                colourFactor = -1 * colourFactor * (colourFactor - 2.0); // remap the factor, grouping more high values near the boundary
+                colourFactor = (static_cast<double>(mandelbrotGrid.iterationsAt(x, y) + 1) - (log(log(mandelbrotGrid.valueAt(x, y).magnitude())) / log(2.0))) / iterationCount;
+                colourFactor = colourFactor * (2.0 - colourFactor); // remap the factor, grouping more high values near the boundary
                 alpha = static_cast<int>(colourFactor * 255.0);
-                SDL_SetRenderDrawColor(renderer, alpha, alpha, alpha, 255);
+                SDL_SetRenderDrawColor(renderer, alpha, alpha/2, alpha/8, 255);
                 SDL_RenderDrawPoint(renderer, x, y);
             }
         }

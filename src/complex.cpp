@@ -5,129 +5,129 @@
 Complex::Complex()
 {
     real = 0.0;
-    imaginary = 0.0;
+    imag = 0.0;
 }
 
 Complex::Complex(double realComponent, double imaginaryComponent)
-    : real(realComponent), imaginary(imaginaryComponent)
+    : real(realComponent), imag(imaginaryComponent)
 {
 }
 
 void Complex::zero()
 {
     real = 0.0;
-    imaginary = 0.0;
+    imag = 0.0;
 }
 
 void Complex::set(double realComponent, double imaginaryComponent)
 {
     real = realComponent;
-    imaginary = imaginaryComponent;
+    imag = imaginaryComponent;
 }
 void Complex::set(Complex other)
 {
     real = other.real;
-    imaginary = other.imaginary;
+    imag = other.imag;
 }
 void Complex::set(Complex *other)
 {
     real = other->real;
-    imaginary = other->imaginary;
+    imag = other->imag;
 }
 
 void Complex::add(Complex other)
 {
     real += other.real;
-    imaginary += other.imaginary;
+    imag += other.imag;
 }
 void Complex::add(Complex *other)
 {
     real += other->real;
-    imaginary += other->imaginary;
+    imag += other->imag;
 }
 Complex Complex::addInplace(Complex *other)
 {
-    return Complex(real + other->real, imaginary + other->imaginary);
+    return Complex(real + other->real, imag + other->imag);
 }
 
 void Complex::subtract(Complex other)
 {
     real -= other.real;
-    imaginary -= other.imaginary;
+    imag -= other.imag;
 }
 void Complex::subtract(Complex *other)
 {
     real -= other->real;
-    imaginary -= other->imaginary;
+    imag -= other->imag;
 }
 Complex Complex::subtractInplace(Complex *other)
 {
-    return Complex(real - other->real, imaginary - other->imaginary);
+    return Complex(real - other->real, imag - other->imag);
 }
 
 void Complex::multiply(Complex other)
 {
     set(
-        real * other.real - imaginary * other.imaginary,
-        real * other.imaginary + imaginary * other.real
+        real * other.real - imag * other.imag,
+        real * other.imag + imag * other.real
     );
 }
 void Complex::multiply(Complex *other)
 {
     set(
-        real * other->real - imaginary * other->imaginary,
-        real * other->imaginary + imaginary * other->real
+        real * other->real - imag * other->imag,
+        real * other->imag + imag * other->real
     );
 }
 Complex Complex::multiplyInplace(Complex other)
 {
     return Complex(
-        real * other.real - imaginary * other.imaginary,
-        real * other.imaginary + imaginary * other.real
+        real * other.real - imag * other.imag,
+        real * other.imag + imag * other.real
     );
 }
 Complex Complex::multiplyInplace(Complex *other)
 {
     return Complex(
-        real * other->real - imaginary * other->imaginary,
-        real * other->imaginary + imaginary * other->real
+        real * other->real - imag * other->imag,
+        real * other->imag + imag * other->real
     );
 }
 
 void Complex::square()
 {
-    multiply(Complex(real, imaginary));
+    multiply(Complex(real, imag));
 }
 Complex Complex::squareInplace()
 {
-    return multiplyInplace(Complex(real, imaginary));
+    return multiplyInplace(Complex(real, imag));
 }
 
 void Complex::scale(double scalar)
 {
     real *= scalar;
-    imaginary *= scalar;
+    imag *= scalar;
 }
 Complex Complex::scaleInplace(double scalar)
 {
-    return Complex(real * scalar, imaginary * scalar);
+    return Complex(real * scalar, imag * scalar);
 }
 
 double Complex::magnitude()
 {
-    return std::sqrt(real * real + imaginary * imaginary);
+    return std::sqrt(real * real + imag * imag);
 }
 
 
-Complex addComplex(Complex first, Complex second) { return Complex(first.real + second.real, first.imaginary + second.imaginary); }
-Complex addComplex(Complex first, Complex *second) { return Complex(first.real + second->real, first.imaginary + second->imaginary); }
-Complex addComplex(Complex *first, Complex second) { return Complex(first->real + second.real, first->imaginary + second.imaginary); }
-Complex addComplex(Complex *first, Complex *second) { return Complex(first->real + second->real, first->imaginary + second->imaginary); }
+Complex addComplex(Complex first, Complex second) { return Complex(first.real + second.real, first.imag + second.imag); }
+Complex addComplex(Complex first, Complex *second) { return Complex(first.real + second->real, first.imag + second->imag); }
+Complex addComplex(Complex *first, Complex second) { return Complex(first->real + second.real, first->imag + second.imag); }
+Complex addComplex(Complex *first, Complex *second) { return Complex(first->real + second->real, first->imag + second->imag); }
 
-Complex subtractComplex(Complex first, Complex second) { return Complex(first.real - second.real, first.imaginary - second.imaginary); }
-Complex subtractComplex(Complex first, Complex *second) { return Complex(first.real - second->real, first.imaginary - second->imaginary); }
-Complex subtractComplex(Complex *first, Complex second) { return Complex(first->real - second.real, first->imaginary - second.imaginary); }
-Complex subtractComplex(Complex *first, Complex *second) { return Complex(first->real - second->real, first->imaginary - second->imaginary); }
+Complex subtractComplex(Complex first, Complex second) { return Complex(first.real - second.real, first.imag - second.imag); }
+Complex subtractComplex(Complex first, Complex *second) { return Complex(first.real - second->real, first.imag - second->imag); }
+Complex subtractComplex(Complex *first, Complex second) { return Complex(first->real - second.real, first->imag - second.imag); }
+Complex subtractComplex(Complex *first, Complex *second) { return Complex(first->real - second->real, first->imag - second->imag); }
 
-Complex scaleComplex(Complex complex, double scalar) { return Complex(complex.real * scalar, complex.imaginary * scalar); }
-Complex scaleComplex(Complex *complex, double scalar) { return Complex(complex->real * scalar, complex->imaginary * scalar); }
+Complex scaleComplex(Complex complex, double scalar) { return Complex(complex.real * scalar, complex.imag * scalar); }
+Complex scaleComplex(Complex *complex, double scalar) { return Complex(complex->real * scalar, complex->imag * scalar); }

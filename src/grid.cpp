@@ -2,15 +2,14 @@
 
 #include <vector>
 #include <iostream>
-#include <complex>
+#include "complex.hpp"
 
 MandelbrotGrid::MandelbrotGrid()
 {
-    using namespace std::complex_literals;
     m_width = 1;
     m_height = 1;
-    lowerBound = - 2.0 - 2.0i;
-    upperBound = 2.0 + 2.0i;
+    lowerBound.set(-2.0, -2.0);
+    upperBound.set(2.0, 2.0);
     renderedToX = 0;
     renderedToY = 0;
     iterationCount = 0;
@@ -19,16 +18,14 @@ MandelbrotGrid::MandelbrotGrid()
 
 void MandelbrotGrid::initializeGrid(int width, int height, double realLowerBound, double imaginaryLowerBound, double realUpperBound, double imaginaryUpperBound)
 {
-    using namespace std::complex_literals;
-
     m_width = width;
     m_height = height;
 
-    lowerBound = realLowerBound + imaginaryLowerBound*1i;
-    upperBound = realUpperBound + imaginaryUpperBound*1i;
+    lowerBound.set(realLowerBound, imaginaryLowerBound);
+    upperBound.set(realUpperBound, imaginaryUpperBound);
 
     grid.resize(width * height);
-    grid.assign(width * height, std::complex<double>(0.0, 0.0));
+    grid.assign(width * height, Complex(0.0, 0.0));
 
     iterationGrid.resize(width * height);
     iterationGrid.assign(width * height, 0);
@@ -50,14 +47,14 @@ int MandelbrotGrid::height()
     return m_height;
 }
 
-std::complex<double> MandelbrotGrid::valueAt(int x, int y)
+Complex MandelbrotGrid::valueAt(int x, int y)
 {
     return grid[x * m_height + y];
 }
 
 bool MandelbrotGrid::divergesAt(int x, int y)
 {
-    return abs(valueAt(x, y)) > 2;
+    return valueAt(x, y).magnitude() > 2;
 }
 
 int MandelbrotGrid::getIterationCount()
@@ -70,22 +67,22 @@ int MandelbrotGrid::iterationsAt(int x, int y)
     return iterationGrid[x * m_height + y];
 }
 
-std::complex<double> MandelbrotGrid::mapToComplex(double x, double y)
+Complex MandelbrotGrid::mapToComplex(double x, double y)
 {
-    double realRange = upperBound.real() - lowerBound.real();
-    double imaginaryRange = upperBound.imag() - lowerBound.imag();
+    double realRange = upperBound.real - lowerBound.real;
+    double imaginaryRange = upperBound.imag - lowerBound.imag;
     x *= realRange / static_cast<double>(m_width - 1);
     y *= imaginaryRange / static_cast<double>(m_height - 1);
 
-    x += lowerBound.real();
-    y += lowerBound.imag();
+    x += lowerBound.real;
+    y += lowerBound.imag;
 
-    y = upperBound.imag() - (y - lowerBound.imag());
+    y = upperBound.imag - (y - lowerBound.imag);
 
-    return std::complex<double>(x, y);
+    return Complex(x, y);
 }
 
-void MandelbrotGrid::setValueAt(int x, int y, std::complex<double> value)
+void MandelbrotGrid::setValueAt(int x, int y, Complex value)
 {
     grid[x * m_height + y] = value;
 }
@@ -103,11 +100,11 @@ void MandelbrotGrid::iterateGrid()
         {
             for (int y = 0; y < m_height; y++)
             {
-                if (abs(valueAt(x, y)) <= 2)
+                if (valueAt(x, y).magnitude() <= 2)
                 {
                     setValueAt(
                         x, y,
-                        valueAt(x, y) * valueAt(x, y) + mapToComplex(x, y)
+                        addComplex(valueAt(x, y).squareInplace(), mapToComplex(x, y))
                     );
                     incrementIterationGrid(x, y);
                 }

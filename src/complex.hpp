@@ -4,7 +4,7 @@
 struct Complex
 {
     double real;
-    double imaginary;
+    double imag;
 
     Complex();
     Complex(double realComponent, double imaginaryComponent);
