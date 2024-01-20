@@ -1,12 +1,12 @@
 # SDL2 mandelbrot
-just a little hobby project in which I want to try to generate a mandelbrot set efficiently
+just a little hobby project in which I want to generate a mandelbrot set efficiently
 
 ## installation
 - requires an installation of SDL2 on your include path, or provide your own and link in Makefile
 - run ´´´make build´´´ to build the project, ´´´make test´´´ to build and instantly test
 
 ### status
-- draws greyscale mandelbrot set to a display of arbitrary size
+- draws shaded mandelbrot set to a display of arbitrary size
 - iteration count is incremented per frame
 
 #### planned
