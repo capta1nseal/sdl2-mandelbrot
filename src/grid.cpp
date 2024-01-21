@@ -6,23 +6,25 @@
 
 MandelbrotGrid::MandelbrotGrid()
 {
+    m_iterationCount = 0;
+    m_iterationMaximum = 4096;
+    m_escapeRadius = 2.0;
     m_width = 1;
     m_height = 1;
-    lowerBound.set(-2.0, -2.0);
-    upperBound.set(2.0, 2.0);
-    renderedToX = 0;
-    renderedToY = 0;
-    iterationCount = 0;
-    iterationMaximum = 256;
+    aspectRatio = static_cast<double>(m_width) / static_cast<double>(m_height);
+    m_viewCenter.set(0.0, 0.0);
+    m_viewScale = 1.0;
 }
 
-void MandelbrotGrid::initializeGrid(int width, int height, double realLowerBound, double imaginaryLowerBound, double realUpperBound, double imaginaryUpperBound)
+void MandelbrotGrid::initializeGrid(int width, int height, double viewCenterReal, double viewCenterImag, double viewScale)
 {
     m_width = width;
     m_height = height;
 
-    lowerBound.set(realLowerBound, imaginaryLowerBound);
-    upperBound.set(realUpperBound, imaginaryUpperBound);
+    aspectRatio = static_cast<double>(m_width) / static_cast<double>(m_height);
+
+    m_viewCenter.set(viewCenterReal, viewCenterImag);
+    m_viewScale = viewScale;
 
     grid.resize(width * height);
     grid.assign(width * height, Complex(0.0, 0.0));
@@ -30,7 +32,34 @@ void MandelbrotGrid::initializeGrid(int width, int height, double realLowerBound
     iterationGrid.resize(width * height);
     iterationGrid.assign(width * height, 0);
 
-    iterationCount = 0;
+    m_iterationCount = 0;
+}
+
+void MandelbrotGrid::resizeGrid(int width, int height)
+{
+    m_width = width;
+    m_height = height;
+
+    aspectRatio = static_cast<double>(m_width) / static_cast<double>(m_height);
+
+    grid.resize(width * height);
+    grid.assign(width * height, Complex(0.0, 0.0));
+
+    iterationGrid.resize(width * height);
+    iterationGrid.assign(width * height, 0);
+
+    m_iterationCount = 0;
+}
+
+void MandelbrotGrid::resetGrid()
+{
+    grid.resize(m_width * m_height);
+    grid.assign(m_width * m_height, Complex(0.0, 0.0));
+
+    iterationGrid.resize(m_width * m_height);
+    iterationGrid.assign(m_width * m_height, 0);
+
+    m_iterationCount = 0;
 }
 
 void MandelbrotGrid::tick()
@@ -54,12 +83,17 @@ Complex MandelbrotGrid::valueAt(int x, int y)
 
 bool MandelbrotGrid::divergesAt(int x, int y)
 {
-    return valueAt(x, y).magnitude() > 2;
+    return valueAt(x, y).magnitude() > m_escapeRadius;
 }
 
 int MandelbrotGrid::getIterationCount()
 {
-    return iterationCount;
+    return m_iterationCount;
+}
+
+double MandelbrotGrid::getEscapeRadius()
+{
+    return m_escapeRadius;
 }
 
 int MandelbrotGrid::iterationsAt(int x, int y)
@@ -67,17 +101,37 @@ int MandelbrotGrid::iterationsAt(int x, int y)
     return iterationGrid[x * m_height + y];
 }
 
+void MandelbrotGrid::zoomIn(double factor)
+{
+    m_viewScale *= factor;
+    resetGrid();
+    std::cout << m_viewScale << "\n";
+}
+void MandelbrotGrid::zoomOut(double factor)
+{
+    m_viewScale /= factor;
+    resetGrid();
+    std::cout << m_viewScale << "\n";
+}
+
+void MandelbrotGrid::move(double real, double imag)
+{
+    m_viewCenter.add(Complex(real / m_viewScale, imag / m_viewScale));
+    resetGrid();
+    std::cout << "(" << m_viewCenter.real << "," << m_viewCenter.imag << ")\n";
+}
+
 Complex MandelbrotGrid::mapToComplex(double x, double y)
 {
-    double realRange = upperBound.real - lowerBound.real;
-    double imaginaryRange = upperBound.imag - lowerBound.imag;
+    double realRange = (2.0 * m_escapeRadius) / m_viewScale;
+    double imaginaryRange = realRange * (static_cast<double>(m_height) / static_cast<double>(m_width));
     x *= realRange / static_cast<double>(m_width - 1);
     y *= imaginaryRange / static_cast<double>(m_height - 1);
 
-    x += lowerBound.real;
-    y += lowerBound.imag;
+    x += m_viewCenter.real - (m_escapeRadius / m_viewScale);
+    y += m_viewCenter.imag - (m_escapeRadius / (m_viewScale * aspectRatio));
 
-    y = upperBound.imag - (y - lowerBound.imag);
+    y = 2.0 * m_viewCenter.imag - y;
 
     return Complex(x, y);
 }
@@ -94,23 +148,20 @@ void MandelbrotGrid::incrementIterationGrid(int x, int y)
 
 void MandelbrotGrid::iterateGrid()
 {
-    if (iterationCount < iterationMaximum)
+    if (m_iterationCount < m_iterationMaximum)
     {
         for (int x = 0; x < m_width; x++)
         {
             for (int y = 0; y < m_height; y++)
             {
-                if (valueAt(x, y).magnitude() <= 2)
+                if (valueAt(x, y).magnitude() <= m_escapeRadius)
                 {
-                    setValueAt(
-                        x, y,
-                        addComplex(valueAt(x, y).squareInplace(), mapToComplex(x, y))
-                    );
+                    grid[x * m_height + y].squaredPlus(mapToComplex(x, y));
                     incrementIterationGrid(x, y);
                 }
             }
         }
-        if (iterationCount == iterationMaximum - 1) std::cout << "finishing up\n";
-        iterationCount++;
+        if (m_iterationCount == m_iterationMaximum - 1) std::cout << "finishing up\n";
+        m_iterationCount++;
     }
 }

@@ -103,6 +103,14 @@ Complex Complex::squareInplace()
     return multiplyInplace(Complex(real, imag));
 }
 
+void Complex::squaredPlus(Complex other)
+{
+    double realSquared = real * real;
+    double imagSquared = imag * imag;
+    imag = (real + real) * imag + other.imag;
+    real = realSquared - imagSquared + other.real;
+}
+
 void Complex::scale(double scalar)
 {
     real *= scalar;

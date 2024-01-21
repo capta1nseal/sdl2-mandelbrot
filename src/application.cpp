@@ -6,6 +6,7 @@
 
 #include <SDL2/SDL.h>
 
+
 std::chrono::_V2::steady_clock::time_point now()
 {
     return std::chrono::steady_clock::now();
@@ -85,7 +86,9 @@ void MandelbrotApplication::destroySdl()
 
 void MandelbrotApplication::initializeGrid()
 {
-    mandelbrotGrid.initializeGrid(960, 540, -2.0, -2.0 * 9.0 / 16.0, 2.0, 2.0 * 9.0 / 16.0);
+    mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.0, 0.0, 1.0);
+
+    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -0.747089, 0.100153, 955.594); // - takes you to a zoom in seahorse valley
 }
 
 void MandelbrotApplication::handleEvents()
@@ -107,8 +110,7 @@ void MandelbrotApplication::handleEvents()
                 displayWidth = event.window.data1;
                 displayHeight = event.window.data2;
 
-                double scaleFactor = static_cast<double>(displayHeight) / static_cast<double>(displayWidth);
-                mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -2.0, -2.0 * scaleFactor, 2.0, 2.0 * scaleFactor);
+                mandelbrotGrid.resizeGrid(displayWidth, displayHeight);
             }
             break;
         case SDL_KEYDOWN:
@@ -127,6 +129,24 @@ void MandelbrotApplication::handleEvents()
                     SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
                 }
                 isFullscreen = !isFullscreen;
+                break;
+            case SDL_SCANCODE_UP:
+                mandelbrotGrid.zoomIn(1.1);
+                break;
+            case SDL_SCANCODE_DOWN:
+                mandelbrotGrid.zoomOut(1.1);
+                break;
+            case SDL_SCANCODE_W:
+                mandelbrotGrid.move(0.0, 0.1);
+                break;
+            case SDL_SCANCODE_S:
+                mandelbrotGrid.move(0.0, -0.1);
+                break;
+            case SDL_SCANCODE_A:
+                mandelbrotGrid.move(-0.1, 0.0);
+                break;
+            case SDL_SCANCODE_D:
+                mandelbrotGrid.move(0.1, 0.0);
                 break;
             default:
                 break;
@@ -161,7 +181,9 @@ void MandelbrotApplication::draw()
 
     int width = mandelbrotGrid.width();
     int height = mandelbrotGrid.height();
-    int iterationCount = mandelbrotGrid.getIterationCount();
+    double iterationCount = static_cast<double>(mandelbrotGrid.getIterationCount());
+    double escapeIterationCount;
+    double localValueMagnitude;
     double colourFactor = 0;
     Uint8 alpha = 0;
 
@@ -171,10 +193,17 @@ void MandelbrotApplication::draw()
         {
             if (mandelbrotGrid.divergesAt(x, y))
             {
-                colourFactor = (static_cast<double>(mandelbrotGrid.iterationsAt(x, y) + 1) - log(log2(mandelbrotGrid.valueAt(x, y).magnitude()))) / iterationCount;
-                colourFactor = colourFactor * (2.0 - colourFactor); // remap the factor, grouping more high values near the boundary
-                alpha = static_cast<int>(colourFactor * 255.0);
-                SDL_SetRenderDrawColor(renderer, alpha, alpha/2, alpha/8, 255);
+                escapeIterationCount = static_cast<double>(mandelbrotGrid.iterationsAt(x, y));
+                localValueMagnitude = mandelbrotGrid.valueAt(x, y).magnitude();
+                colourFactor = (escapeIterationCount - log2(log2(localValueMagnitude))) / iterationCount;
+                // colourFactor = colourFactor * (2.0 - colourFactor); // remap the factor, grouping more high values near the boundary
+                
+                alpha = static_cast<int>((1.0 - colourFactor) * 255.0);
+                SDL_SetRenderDrawColor(renderer, alpha, alpha, alpha, 255);
+
+                //colourFactor = -pow(colourFactor - 1.0, 4) + 1.0;
+                //alpha = static_cast<int>(colourFactor * 255.0);
+                //SDL_SetRenderDrawColor(renderer, alpha/2, alpha/8, alpha, 255);
                 SDL_RenderDrawPoint(renderer, x, y);
             }
         }

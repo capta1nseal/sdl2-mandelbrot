@@ -10,7 +10,11 @@ class MandelbrotGrid
 public:
     MandelbrotGrid();
 
-    void initializeGrid(int width, int height, double realLowerBound, double imaginaryLowerBound, double realUpperBound, double imaginaryUpperBound);
+    void initializeGrid(int width, int height, double viewCenterReal, double viewCenterImag, double viewScale);
+
+    void resizeGrid(int width, int height);
+
+    void resetGrid();
 
     void tick();
 
@@ -23,16 +27,25 @@ public:
 
     int getIterationCount();
 
+    double getEscapeRadius();
+
     int iterationsAt(int x, int y);
+
+    void zoomIn(double factor);
+    void zoomOut(double factor);
+
+    void move(double real, double imag);
 
 private:
     std::vector<Complex> grid;
     std::vector<int> iterationGrid;
-    int iterationCount;
-    int iterationMaximum;
+    int m_iterationCount;
+    int m_iterationMaximum;
+    double m_escapeRadius;
     int m_width, m_height;
-    Complex lowerBound, upperBound;
-    int renderedToX, renderedToY;
+    double aspectRatio;
+    Complex m_viewCenter;
+    double m_viewScale;
 
     Complex mapToComplex(double x, double y);
 
