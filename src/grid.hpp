@@ -27,6 +27,10 @@ public:
 
     int getIterationCount();
 
+    int getEscapeCount();
+
+    int getEscapeIterationSum(int i);
+
     double getEscapeRadius();
 
     int iterationsAt(int x, int y);
@@ -39,6 +43,9 @@ public:
 private:
     std::vector<Complex> grid;
     std::vector<int> iterationGrid;
+    std::vector<int> escapeIterationCounter;
+    std::vector<int> escapeIterationCounterSums;
+    int m_escapeCount;
     int m_iterationCount;
     int m_iterationMaximum;
     double m_escapeRadius;

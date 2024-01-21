@@ -25,6 +25,10 @@ private:
     SDL_Window *window;
     SDL_Renderer *renderer;
 
+    SDL_Texture *renderTexture;
+    unsigned char* texturePixels;
+    int texturePitch;
+
     SDL_Event event;
     const uint8_t *keyboardState;
 
@@ -36,6 +40,8 @@ private:
     void destroySdl();
 
     void initializeGrid();
+
+    void initializeRenderTexture();
 
     void handleEvents();
 

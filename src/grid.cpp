@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <numeric>
 #include "complex.hpp"
 
 MandelbrotGrid::MandelbrotGrid()
@@ -18,21 +19,10 @@ MandelbrotGrid::MandelbrotGrid()
 
 void MandelbrotGrid::initializeGrid(int width, int height, double viewCenterReal, double viewCenterImag, double viewScale)
 {
-    m_width = width;
-    m_height = height;
-
-    aspectRatio = static_cast<double>(m_width) / static_cast<double>(m_height);
-
     m_viewCenter.set(viewCenterReal, viewCenterImag);
     m_viewScale = viewScale;
 
-    grid.resize(width * height);
-    grid.assign(width * height, Complex(0.0, 0.0));
-
-    iterationGrid.resize(width * height);
-    iterationGrid.assign(width * height, 0);
-
-    m_iterationCount = 0;
+    resizeGrid(width, height);
 }
 
 void MandelbrotGrid::resizeGrid(int width, int height)
@@ -42,13 +32,7 @@ void MandelbrotGrid::resizeGrid(int width, int height)
 
     aspectRatio = static_cast<double>(m_width) / static_cast<double>(m_height);
 
-    grid.resize(width * height);
-    grid.assign(width * height, Complex(0.0, 0.0));
-
-    iterationGrid.resize(width * height);
-    iterationGrid.assign(width * height, 0);
-
-    m_iterationCount = 0;
+    resetGrid();
 }
 
 void MandelbrotGrid::resetGrid()
@@ -58,6 +42,12 @@ void MandelbrotGrid::resetGrid()
 
     iterationGrid.resize(m_width * m_height);
     iterationGrid.assign(m_width * m_height, 0);
+
+    m_escapeCount = 0;
+    escapeIterationCounter.resize(m_iterationMaximum);
+    escapeIterationCounter.assign(m_iterationMaximum, 0);
+    escapeIterationCounterSums.resize(m_iterationMaximum);
+    escapeIterationCounterSums.resize(m_iterationMaximum, 0);
 
     m_iterationCount = 0;
 }
@@ -89,6 +79,16 @@ bool MandelbrotGrid::divergesAt(int x, int y)
 int MandelbrotGrid::getIterationCount()
 {
     return m_iterationCount;
+}
+
+int MandelbrotGrid::getEscapeCount()
+{
+    return m_escapeCount;
+}
+
+int MandelbrotGrid::getEscapeIterationSum(int i)
+{
+    return escapeIterationCounterSums[i];
 }
 
 double MandelbrotGrid::getEscapeRadius()
@@ -158,9 +158,21 @@ void MandelbrotGrid::iterateGrid()
                 {
                     grid[x * m_height + y].squaredPlus(mapToComplex(x, y));
                     incrementIterationGrid(x, y);
+
+                    if (valueAt(x, y).magnitude() > m_escapeRadius)
+                    {
+                        m_escapeCount++;
+                        escapeIterationCounter[iterationsAt(x, y)]++;
+                    }
                 }
             }
         }
+
+        for (int i = 0; i < m_iterationMaximum; i++)
+        {
+            escapeIterationCounterSums[i] = std::accumulate(escapeIterationCounter.begin(), escapeIterationCounter.begin() + i + 1, 0);
+        }
+
         if (m_iterationCount == m_iterationMaximum - 1) std::cout << "finishing up\n";
         m_iterationCount++;
     }
