@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <numeric>
+#include <cmath>
 #include "complex.hpp"
 
 MandelbrotGrid::MandelbrotGrid()
@@ -66,6 +67,11 @@ int MandelbrotGrid::height()
     return m_height;
 }
 
+double MandelbrotGrid::getViewScale()
+{
+    return m_viewScale;
+}
+
 Complex MandelbrotGrid::valueAt(int x, int y)
 {
     return grid[x * m_height + y];
@@ -86,9 +92,27 @@ int MandelbrotGrid::getEscapeCount()
     return m_escapeCount;
 }
 
-int MandelbrotGrid::getEscapeIterationSum(int i)
+int MandelbrotGrid::getEscapeIterationCounter(int i)
+{
+    return escapeIterationCounter[i];
+}
+
+int MandelbrotGrid::getEscapeIterationCounterSum(int i)
 {
     return escapeIterationCounterSums[i];
+}
+double MandelbrotGrid::getEscapeIterationCounterSum(double i)
+{
+    int a = floor(i);
+    if (a < 0) a = 0;
+
+    int b = ceil(i);
+    if (b > m_iterationMaximum - 1) b = m_iterationMaximum - 1;
+
+    if (b <= a) return escapeIterationCounterSums[static_cast<int>(i)];
+
+    i = static_cast<double>(i - a) / static_cast<double>(b - a);
+    return escapeIterationCounterSums[a] + i * (escapeIterationCounterSums[b] - escapeIterationCounterSums[a]);
 }
 
 double MandelbrotGrid::getEscapeRadius()
@@ -112,6 +136,13 @@ void MandelbrotGrid::zoomOut(double factor)
     m_viewScale /= factor;
     resetGrid();
     std::cout << m_viewScale << "\n";
+}
+
+void MandelbrotGrid::zoomOnPixel(int x, int y)
+{
+    m_viewCenter.set(mapToComplex(x, y));
+    m_viewScale *= 2;
+    resetGrid();
 }
 
 void MandelbrotGrid::move(double real, double imag)
@@ -172,8 +203,11 @@ void MandelbrotGrid::iterateGrid()
         {
             escapeIterationCounterSums[i] = std::accumulate(escapeIterationCounter.begin(), escapeIterationCounter.begin() + i + 1, 0);
         }
-
-        if (m_iterationCount == m_iterationMaximum - 1) std::cout << "finishing up\n";
         m_iterationCount++;
+
+        if (m_iterationCount >= m_iterationMaximum)
+        {
+            std::cout << "max iteration count reached\n";
+        }
     }
 }

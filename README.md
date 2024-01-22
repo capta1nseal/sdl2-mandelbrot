@@ -11,17 +11,16 @@ Just a little hobby project in fractal rendering.
     - (everything will be recalculated)
 - move around with WASD keys
 - zoom in/out with up/down arrow keys
+- zoom in and centre on click by left-clicking
 
 #### status
-- draws shaded mandelbrot set to a display of arbitrary size
+- draws mandelbrot set with smooth histogram shading
 - iteration count is incremented per frame
 - basic navigation implemented
 - colouring is persistent regardless of iteration count
-    - temporarily disabled continuous shading until algorithm including colour persistence is found
 - pretty slow. rendered on CPU
 
 ##### planned
-- make the colouring continuous along with the new colour persistence
 - performance optimisation:
     - render with openGL shaders instead of CPU pixel manipulation
     - (related) multithreading

@@ -172,6 +172,8 @@ void MandelbrotApplication::handleEvents()
             {
             case SDL_BUTTON_LEFT:
             {
+                mandelbrotGrid.zoomOnPixel(event.button.x, event.button.y);
+                initializeRenderTexture();
                 break;
             }
             default:
@@ -198,8 +200,8 @@ void MandelbrotApplication::draw()
     int height = mandelbrotGrid.height();
     // double iterationCount = static_cast<double>(mandelbrotGrid.getIterationCount());
     double escapeCount = mandelbrotGrid.getEscapeCount();
-    int escapeIterationCount;
-    // double localValueMagnitude;
+    double escapeIterationCount;
+    double localValueMagnitude;
     double colourFactor = 0;
     Uint8 alpha = 0;
 
@@ -212,22 +214,27 @@ void MandelbrotApplication::draw()
             if (mandelbrotGrid.divergesAt(x, y))
             {
                 escapeIterationCount = mandelbrotGrid.iterationsAt(x, y);
-                // localValueMagnitude = mandelbrotGrid.valueAt(x, y).magnitude();
-                // colourFactor = (static_cast<double>(escapeIterationCount) - log2(log2(localValueMagnitude))) / iterationCount;
+                localValueMagnitude = mandelbrotGrid.valueAt(x, y).magnitude();
+                // calculate continuous number of iterations to escape
+                escapeIterationCount = (escapeIterationCount - log2(log2(localValueMagnitude)));
+                // get Lerped summed histogram for continuous histogram shading
+                colourFactor = mandelbrotGrid.getEscapeIterationCounterSum(escapeIterationCount) / escapeCount;
 
-                colourFactor = (static_cast<double>(mandelbrotGrid.getEscapeIterationSum(escapeIterationCount))) / escapeCount;
-                
                 alpha = static_cast<int>((1.0 - colourFactor) * 255.0);
-
-                // colourFactor = -pow(colourFactor - 1.0, 4) + 1.0;
-                // alpha = static_cast<int>(colourFactor * 255.0);
-                // SDL_SetRenderDrawColor(renderer, alpha/2, alpha/8, alpha, 255);
 
                 texturePixels[y * texturePitch + x * 4] = (unsigned char)alpha;
                 texturePixels[y * texturePitch + x * 4 + 1] = (unsigned char)alpha;
                 texturePixels[y * texturePitch + x * 4 + 2] = (unsigned char)alpha;
                 texturePixels[y * texturePitch + x * 4 + 3] = (unsigned char)255;
             }
+
+            // else
+            // {
+            //     texturePixels[y * texturePitch + x * 4] = (unsigned char)0;
+            //     texturePixels[y * texturePitch + x * 4 + 1] = (unsigned char)0;
+            //     texturePixels[y * texturePitch + x * 4 + 2] = (unsigned char)0;
+            //     texturePixels[y * texturePitch + x * 4 + 3] = (unsigned char)255;
+            // }
         }
     }
 

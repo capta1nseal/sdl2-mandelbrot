@@ -21,6 +21,8 @@ public:
     int width();
     int height();
 
+    double getViewScale();
+
     Complex valueAt(int x, int y);
 
     bool divergesAt(int x, int y);
@@ -29,7 +31,10 @@ public:
 
     int getEscapeCount();
 
-    int getEscapeIterationSum(int i);
+    int getEscapeIterationCounter(int i);
+
+    int getEscapeIterationCounterSum(int i);
+    double getEscapeIterationCounterSum(double i);
 
     double getEscapeRadius();
 
@@ -37,6 +42,8 @@ public:
 
     void zoomIn(double factor);
     void zoomOut(double factor);
+
+    void zoomOnPixel(int x, int y);
 
     void move(double real, double imag);
 
