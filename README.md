@@ -14,13 +14,15 @@ Just a little hobby project in fractal rendering.
 - zoom in and centre on click by left-clicking
 
 #### status
-- draws mandelbrot set with smooth histogram shading
+- draws mandelbrot set
+- greyscale colouring with smooth histogram shading
 - iteration count is incremented per frame
 - basic navigation implemented
 - colouring is persistent regardless of iteration count
 - pretty slow. rendered on CPU
 
 ##### planned
+- render in colour using an HSV to RGB transform
 - performance optimisation:
     - render with openGL shaders instead of CPU pixel manipulation
     - (related) multithreading
