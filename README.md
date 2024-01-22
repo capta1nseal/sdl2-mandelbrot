@@ -27,3 +27,5 @@ Just a little hobby project in fractal rendering.
     - render with openGL shaders instead of CPU pixel manipulation
     - (related) multithreading
 - smooth user experience
+    - speed up low-quality rendering enough to make navigation feel snappy
+    - select and change different in-pipeline algorithms from the GUI instead of in code
