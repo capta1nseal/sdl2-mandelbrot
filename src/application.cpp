@@ -188,6 +188,15 @@ void MandelbrotApplication::handleEvents()
 
 void MandelbrotApplication::tick()
 {
+    if (mandelbrotGrid.getIterationCount() == 0)
+    {
+        do
+        {
+            mandelbrotGrid.tick();
+        } while (mandelbrotGrid.getEscapeCount() == 0 and mandelbrotGrid.getIterationCount() < mandelbrotGrid.getMaxIterationCount());
+        return;
+    }
+
     mandelbrotGrid.tick();
 }
 

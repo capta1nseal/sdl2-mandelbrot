@@ -8,24 +8,24 @@ Just a little hobby project in fractal rendering.
 ### usage
 - run the executable
 - window can be resized, toggle fullscreen with F11
-    - (everything will be recalculated)
 - move around with WASD keys
 - zoom in/out with up/down arrow keys
 - zoom in and centre on click by left-clicking
+    - resizing or zooming may result in needing to wait a moment until enough iterations are recalculated to be able to see anything
 
 #### status
 - draws mandelbrot set
 - greyscale colouring with smooth histogram shading
 - iteration count is incremented per frame
 - basic navigation implemented
-- colouring is persistent regardless of iteration count
 - pretty slow. rendered on CPU
 
 ##### planned
 - render in colour using an HSV to RGB transform
+    - add a way to switch between colouring algorithms, using some functional or object-oriented programming to make it efficient
 - performance optimisation:
     - render with openGL shaders instead of CPU pixel manipulation
-    - (related) multithreading
+    - multithreading
 - smooth user experience
-    - speed up low-quality rendering enough to make navigation feel snappy
-    - select and change different in-pipeline algorithms from the GUI instead of in code
+    - speed up rendering enough (maybe add initial low-quality pass(es)) to make navigation feel snappy
+    - GUI for changing between colouring algorithms, zooming, etc.

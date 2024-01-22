@@ -31,6 +31,8 @@ public:
 
     int getEscapeCount();
 
+    int getMaxIterationCount();
+
     int getEscapeIterationCounter(int i);
 
     int getEscapeIterationCounterSum(int i);

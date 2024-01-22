@@ -11,10 +11,11 @@ TREE := $(sort $(patsubst %/,%,$(dir $(OBJS))))
 
 CPPFLAGS     = -MMD -MP -MF $(@:$(OBJDIR)/%.o=$(DEPDIR)/%.d)
 CXXWARNFLAGS = -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wzero-as-null-pointer-constant -Wunused -Woverloaded-virtual -Wformat=2 -Werror=vla -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wnull-dereference
+# add -march=native after -O3 if you wish to slightly speed up your binary on your machine
 CXXFLAGS    := -std=c++20 -O3 $(CXXWARNFLAGS)
 LINKFLAGS    = -lSDL2 -lSDL2main
 
-.PHONY: build test clean
+.PHONY: build test clean build-native
 
 $(TARGET): $(OBJS)
 	g++ -o $(BINDIR)/$@ $^ $(CXXFLAGS) $(LINKFLAGS)

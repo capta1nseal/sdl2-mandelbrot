@@ -120,6 +120,11 @@ double MandelbrotGrid::getEscapeRadius()
     return m_escapeRadius;
 }
 
+int MandelbrotGrid::getMaxIterationCount()
+{
+    return m_iterationMaximum;
+}
+
 int MandelbrotGrid::iterationsAt(int x, int y)
 {
     return iterationGrid[x * m_height + y];
@@ -154,10 +159,12 @@ void MandelbrotGrid::move(double real, double imag)
 
 Complex MandelbrotGrid::mapToComplex(double x, double y)
 {
+    x += 0.5;
+    y += 0.5;
     double realRange = (2.0 * m_escapeRadius) / m_viewScale;
     double imaginaryRange = realRange * (static_cast<double>(m_height) / static_cast<double>(m_width));
-    x *= realRange / static_cast<double>(m_width - 1);
-    y *= imaginaryRange / static_cast<double>(m_height - 1);
+    x *= realRange / static_cast<double>(m_width);
+    y *= imaginaryRange / static_cast<double>(m_height);
 
     x += m_viewCenter.real - (m_escapeRadius / m_viewScale);
     y += m_viewCenter.imag - (m_escapeRadius / (m_viewScale * aspectRatio));
