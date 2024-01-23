@@ -193,7 +193,7 @@ void MandelbrotApplication::tick()
         do
         {
             mandelbrotGrid.tick();
-        } while (mandelbrotGrid.getEscapeCount() == 0 and mandelbrotGrid.getIterationCount() < mandelbrotGrid.getMaxIterationCount());
+        } while (mandelbrotGrid.getEscapeCount() == 0 and mandelbrotGrid.getIterationCount() < 16);
         return;
     }
 
