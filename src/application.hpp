@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 
 #include "grid.hpp"
+#include "shading.hpp"
 
 std::chrono::_V2::steady_clock::time_point now();
 
@@ -35,11 +36,15 @@ private:
     SDL_Point mousePosition;
 
     MandelbrotGrid mandelbrotGrid; 
+
+    Shading shading;
     
     void initializeSdl();
     void destroySdl();
 
     void initializeGrid();
+
+    void initializeShading();
 
     void initializeRenderTexture();
 

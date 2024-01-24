@@ -6,6 +6,8 @@
 
 #include <SDL2/SDL.h>
 
+#include "grid.hpp"
+#include "shading.hpp"
 
 std::chrono::_V2::steady_clock::time_point now()
 {
@@ -15,8 +17,8 @@ std::chrono::_V2::steady_clock::time_point now()
 MandelbrotApplication::MandelbrotApplication()
 {
     initializeSdl();
-
     initializeGrid();
+    initializeShading();
 
     isRunning = false;
     isFullscreen = false;
@@ -88,9 +90,15 @@ void MandelbrotApplication::initializeGrid()
 {
     mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.0, 0.0, 1.0);
 
-    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -0.747089, 0.100153, 955.594); // - takes you to a zoom in seahorse valley
+    // - takes you to a zoom in seahorse valley
+    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -0.747089, 0.100153, 955.594);
 
     initializeRenderTexture();
+}
+
+void MandelbrotApplication::initializeShading()
+{
+    shading.setShadingFunction(2);
 }
 
 void MandelbrotApplication::initializeRenderTexture()
@@ -202,17 +210,17 @@ void MandelbrotApplication::tick()
 
 void MandelbrotApplication::draw()
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
     int width = mandelbrotGrid.width();
     int height = mandelbrotGrid.height();
-    // double iterationCount = static_cast<double>(mandelbrotGrid.getIterationCount());
     double escapeCount = mandelbrotGrid.getEscapeCount();
     double escapeIterationCount;
     double localValueMagnitude;
-    double colourFactor = 0;
-    Uint8 alpha = 0;
+    double colourFactor;
+    Shading::Colour colour;
+
+    colour = shading.shade(0.0);
+    SDL_SetRenderDrawColor(renderer, get<0>(colour), get<1>(colour), get<2>(colour), 255);
+    SDL_RenderClear(renderer);
 
     SDL_LockTexture(renderTexture, NULL, (void**)&texturePixels, &texturePitch);
 
@@ -227,27 +235,29 @@ void MandelbrotApplication::draw()
                 // calculate continuous number of iterations to escape
                 escapeIterationCount = (escapeIterationCount - log2(log2(localValueMagnitude)));
                 // get Lerped summed histogram for continuous histogram shading
-                colourFactor = mandelbrotGrid.getEscapeIterationCounterSum(escapeIterationCount) / escapeCount;
+                colourFactor = 1.0 - mandelbrotGrid.getEscapeIterationCounterSum(escapeIterationCount) / escapeCount;
 
-                alpha = static_cast<int>((1.0 - colourFactor) * 255.0);
+                colour = shading.shade(colourFactor);
 
-                texturePixels[y * texturePitch + x * 4] = (unsigned char)alpha;
-                texturePixels[y * texturePitch + x * 4 + 1] = (unsigned char)alpha;
-                texturePixels[y * texturePitch + x * 4 + 2] = (unsigned char)alpha;
-                texturePixels[y * texturePitch + x * 4 + 3] = (unsigned char)255;
+                texturePixels[y * texturePitch + x * 4] = static_cast<unsigned char>(get<2>(colour));
+                texturePixels[y * texturePitch + x * 4 + 1] = static_cast<unsigned char>(get<1>(colour));
+                texturePixels[y * texturePitch + x * 4 + 2] = static_cast<unsigned char>(get<0>(colour));
+                texturePixels[y * texturePitch + x * 4 + 3] = static_cast<unsigned char>(255);
             }
 
             // else
             // {
-            //     texturePixels[y * texturePitch + x * 4] = (unsigned char)0;
-            //     texturePixels[y * texturePitch + x * 4 + 1] = (unsigned char)0;
-            //     texturePixels[y * texturePitch + x * 4 + 2] = (unsigned char)0;
-            //     texturePixels[y * texturePitch + x * 4 + 3] = (unsigned char)255;
+            //     texturePixels[y * texturePitch + x * 4] = static_cast<unsigned char>(0);
+            //     texturePixels[y * texturePitch + x * 4 + 1] = static_cast<unsigned char>(0);
+            //     texturePixels[y * texturePitch + x * 4 + 2] = static_cast<unsigned char>(0);
+            //     texturePixels[y * texturePitch + x * 4 + 3] = static_cast<unsigned char>(255);
             // }
         }
     }
 
     SDL_UnlockTexture(renderTexture);
+
+    SDL_SetTextureBlendMode(renderTexture, SDL_BLENDMODE_BLEND);
 
     SDL_RenderCopy(renderer, renderTexture, NULL, NULL);
 
