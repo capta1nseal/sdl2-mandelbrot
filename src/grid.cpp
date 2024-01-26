@@ -57,8 +57,8 @@ void MandelbrotGrid::resetGrid()
     safe_magnitudeGrid.resize(m_width * m_height);
     safe_magnitudeGrid.assign(m_width * m_height, 0.0);
 
-    iterationGrid.resize(m_width * m_height);
-    iterationGrid.assign(m_width * m_height, 0);
+    m_iterationGrid.resize(m_width * m_height);
+    m_iterationGrid.assign(m_width * m_height, 0);
 
     safe_iterationGrid.resize(m_width * m_height);
     safe_iterationGrid.assign(m_width * m_height, 0);
@@ -107,11 +107,6 @@ void MandelbrotGrid::getFrameData(int &iterationCount, int &escapeCount, std::ve
 
     escapeIterationCounterSums = safe_escapeIterationCounterSums;
 }
-
-//int MandelbrotGrid::iterationsAt(int x, int y)
-//{
-//    return iterationGrid[x * m_height + y];
-//}
 
 void MandelbrotGrid::zoomIn(double factor)
 {
@@ -176,7 +171,7 @@ void MandelbrotGrid::setValueAt(int x, int y, Complex value)
 
 void MandelbrotGrid::incrementIterationGrid(int x, int y)
 {
-    iterationGrid[x * m_height + y] += 1;
+    m_iterationGrid[x * m_height + y] += 1;
 }
 
 void MandelbrotGrid::iterateGrid()
@@ -201,7 +196,7 @@ void MandelbrotGrid::iterateGrid()
                     if (grid[x * m_height + y].magnitude() > m_escapeRadius)
                     {
                         m_escapeCount++;
-                        escapeIterationCounter[iterationGrid[x * m_height + y]]++;
+                        escapeIterationCounter[m_iterationGrid[x * m_height + y]]++;
                     }
                 }
             }
@@ -217,7 +212,7 @@ void MandelbrotGrid::iterateGrid()
             for (int i = 0; i < m_width * m_height; i++)
             {
                 safe_magnitudeGrid[i] = grid[i].magnitude();
-                safe_iterationGrid[i] = iterationGrid[i];
+                safe_iterationGrid[i] = m_iterationGrid[i];
             }
 
             for (int i = 0; i < m_iterationMaximum; i++)

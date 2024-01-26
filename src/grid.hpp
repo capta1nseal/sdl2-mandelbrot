@@ -34,7 +34,7 @@ public:
 
 private:
     std::vector<Complex> grid;
-    std::vector<int> iterationGrid;
+    std::vector<int> m_iterationGrid;
 
     std::vector<double> safe_magnitudeGrid;
     std::vector<int> safe_iterationGrid;

@@ -223,7 +223,7 @@ void MandelbrotApplication::draw()
         if (a < 0) a = 0;
 
         int b = ceil(escapeIterationCount);
-        if (b > escapeIterationCounterSums.size() - 1) b = escapeIterationCounterSums.size() - 1;
+        if (b > static_cast<int>(escapeIterationCounterSums.size()) - 1) b = escapeIterationCounterSums.size() - 1;
 
         if (b <= a) return escapeIterationCounterSums[static_cast<int>(escapeIterationCount)];
 
@@ -242,9 +242,9 @@ void MandelbrotApplication::draw()
 
     SDL_LockTexture(renderTexture, NULL, reinterpret_cast<void**>(&texturePixels), &texturePitch);
 
-    for (int x = 0; x < displayWidth; x++)
+    for (unsigned int x = 0; x < displayWidth; x++)
     {
-        for (int y = 0; y < displayHeight; y++)
+        for (unsigned int y = 0; y < displayHeight; y++)
         {
             if (magnitudeGrid[x * displayHeight + y] > 2.0)
             {

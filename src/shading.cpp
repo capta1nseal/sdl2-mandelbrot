@@ -184,7 +184,7 @@ Shading::Colour Shading::colourRamp(std::vector<std::pair<double, HsvColour>> hs
     // all cases which blend between two colours
     // blending algorithm is lerping h,s,v of both colours
     double scaledFactor;
-    for (int i = 1; i < hsvPath.size(); i++)
+    for (unsigned int i = 1; i < hsvPath.size(); i++)
     {
         if (factor <= hsvPath[i].first)
         {
