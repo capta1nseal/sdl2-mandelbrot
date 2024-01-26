@@ -1,5 +1,6 @@
 #include "grid.hpp"
 
+#include <mutex>
 #include <vector>
 #include <iostream>
 #include <numeric>
@@ -38,6 +39,8 @@ void MandelbrotGrid::resizeGrid(int width, int height)
 
 void MandelbrotGrid::resetGrid()
 {
+    std::lock_guard<std::mutex> lock(calculationMutex);
+
     grid.resize(m_width * m_height);
     grid.assign(m_width * m_height, Complex(0.0, 0.0));
 
@@ -53,9 +56,18 @@ void MandelbrotGrid::resetGrid()
     m_iterationCount = 0;
 }
 
-void MandelbrotGrid::tick()
+void MandelbrotGrid::calculationLoop()
 {
-    iterateGrid();
+    isRunning = true;
+    while (isRunning)
+    {
+        iterateGrid();
+    }
+}
+
+void MandelbrotGrid::stop()
+{
+    isRunning = false;
 }
 
 int MandelbrotGrid::width()
@@ -190,6 +202,7 @@ void MandelbrotGrid::iterateGrid()
     {
         for (int x = 0; x < m_width; x++)
         {
+            std::lock_guard<std::mutex> lock(calculationMutex);
             for (int y = 0; y < m_height; y++)
             {
                 if (valueAt(x, y).magnitude() <= m_escapeRadius)
@@ -206,6 +219,7 @@ void MandelbrotGrid::iterateGrid()
             }
         }
 
+        std::lock_guard<std::mutex> lock(calculationMutex);
         for (int i = 0; i < m_iterationMaximum; i++)
         {
             escapeIterationCounterSums[i] = std::accumulate(escapeIterationCounter.begin(), escapeIterationCounter.begin() + i + 1, 0);

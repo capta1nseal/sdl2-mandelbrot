@@ -2,6 +2,7 @@
 #define _MANDELBROTAPPLICATION
 
 #include <chrono>
+#include <thread>
 
 #include <SDL2/SDL.h>
 
@@ -35,7 +36,8 @@ private:
 
     SDL_Point mousePosition;
 
-    MandelbrotGrid mandelbrotGrid; 
+    MandelbrotGrid mandelbrotGrid;
+    std::thread calculationThread;
 
     Shading shading;
     
@@ -49,8 +51,6 @@ private:
     void initializeRenderTexture();
 
     void handleEvents();
-
-    void tick();
 
     void draw();
 };

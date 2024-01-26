@@ -1,6 +1,7 @@
 #include "application.hpp"
 
 #include <chrono>
+#include <thread>
 #include <iostream>
 #include <cmath>
 
@@ -30,7 +31,9 @@ void MandelbrotApplication::run()
 
     std::chrono::duration<double> delta;
 
-    int counter = 0;
+    int frameCounter = 0;
+
+    calculationThread = std::thread(&MandelbrotGrid::calculationLoop, &mandelbrotGrid);
 
     isRunning = true;
     draw();
@@ -41,17 +44,19 @@ void MandelbrotApplication::run()
 
         handleEvents();
 
-        tick();
-
         draw();
 
         delta = now() - start;
 
-        if (counter % 600 == 0)
+        if (frameCounter % static_cast<int>(10.0 / delta.count() + 0.0001) == 0)
             std::cout << delta.count() << "\n";
         
-        counter += 1;
+        frameCounter += 1;
     }
+
+    mandelbrotGrid.stop();
+
+    calculationThread.join();
 
     destroySdl();
 }
@@ -72,7 +77,7 @@ void MandelbrotApplication::initializeSdl()
         displayWidth, displayHeight,
         windowFlags);
     
-    uint32_t renderFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC;
+    uint32_t renderFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
     renderer = SDL_CreateRenderer(window, -1, renderFlags);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
@@ -98,7 +103,7 @@ void MandelbrotApplication::initializeGrid()
 
 void MandelbrotApplication::initializeShading()
 {
-    shading.setShadingFunction(2);
+    shading.setShadingFunction(0);
 }
 
 void MandelbrotApplication::initializeRenderTexture()
@@ -192,20 +197,6 @@ void MandelbrotApplication::handleEvents()
             break;
         }
     }
-}
-
-void MandelbrotApplication::tick()
-{
-    if (mandelbrotGrid.getIterationCount() == 0)
-    {
-        do
-        {
-            mandelbrotGrid.tick();
-        } while (mandelbrotGrid.getEscapeCount() == 0 and mandelbrotGrid.getIterationCount() < 32);
-        return;
-    }
-
-    mandelbrotGrid.tick();
 }
 
 void MandelbrotApplication::draw()

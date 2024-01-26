@@ -2,6 +2,7 @@
 #define _MANDELBROTGRID
 
 #include <vector>
+#include <mutex>
 
 #include "complex.hpp"
 
@@ -15,6 +16,10 @@ public:
     void resizeGrid(int width, int height);
 
     void resetGrid();
+
+    void calculationLoop();
+
+    void stop();
 
     void tick();
 
@@ -62,6 +67,9 @@ private:
     double aspectRatio;
     Complex m_viewCenter;
     double m_viewScale;
+
+    bool isRunning;
+    std::mutex calculationMutex;
 
     Complex mapToComplex(double x, double y);
 
