@@ -23,7 +23,7 @@ public:
 
     int getMaxIterationCount();
 
-    void getFrameData(int &escapeCount, std::vector<double> &magnitudeGrid, std::vector<int> &iterationGrid, std::vector<int> &escapeIterationCounterSums);
+    void getFrameData(int &iterationCount, int &escapeCount, std::vector<double> &magnitudeGrid, std::vector<int> &iterationGrid, std::vector<int> &escapeIterationCounterSums);
 
     void zoomIn(double factor);
     void zoomOut(double factor);
@@ -45,6 +45,7 @@ private:
     int m_escapeCount;
     int safe_escapeCount;
     int m_iterationCount;
+    int safe_iterationCount;
     int m_iterationMaximum;
     double m_escapeRadius;
     int m_width, m_height;

@@ -95,15 +95,18 @@ void MandelbrotApplication::initializeGrid()
 {
     mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.0, 0.0, 1.0);
 
-    // - takes you to a zoom in seahorse valley
+    // takes you to a zoom in seahorse valley
     // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -0.747089, 0.100153, 955.594);
+
+    // testing spot for high-end of values
+    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.172403, 0.563459, 8192);
 
     initializeRenderTexture();
 }
 
 void MandelbrotApplication::initializeShading()
 {
-    shading.setShadingFunction(2);
+    shading.setShadingFunction(3);
 }
 
 void MandelbrotApplication::initializeRenderTexture()
@@ -206,12 +209,13 @@ void MandelbrotApplication::draw()
     // double escapeCount = mandelbrotGrid.getEscapeCount();
     // double localValueMagnitude;
 
+    int iterationCount;
     int escapeCount;
     std::vector<double> magnitudeGrid;
     std::vector<int> iterationGrid;
     std::vector<int> escapeIterationCounterSums;
 
-    mandelbrotGrid.getFrameData(escapeCount, magnitudeGrid, iterationGrid, escapeIterationCounterSums);
+    mandelbrotGrid.getFrameData(iterationCount, escapeCount, magnitudeGrid, iterationGrid, escapeIterationCounterSums);
 
     auto smoothEscapeIterationCounterSum = [escapeIterationCounterSums](const double escapeIterationCount) -> double
     {
@@ -228,10 +232,11 @@ void MandelbrotApplication::draw()
     };
 
     double escapeIterationCount;
-    double colourFactor;
+    double histogramFactor;
+    double velocityFactor;
     Shading::Colour colour;
 
-    colour = shading.shade(0.0);
+    colour = shading.shade(1.0, 1.0);
     SDL_SetRenderDrawColor(renderer, get<0>(colour), get<1>(colour), get<2>(colour), 255);
     SDL_RenderClear(renderer);
 
@@ -246,9 +251,11 @@ void MandelbrotApplication::draw()
                 // calculate continuous number of iterations to escape
                 escapeIterationCount = (iterationGrid[x * displayHeight + y] - log2(log2(magnitudeGrid[x * displayHeight + y])));
                 // get Lerped summed histogram for continuous histogram shading
-                colourFactor = 1.0 - smoothEscapeIterationCounterSum(escapeIterationCount) / static_cast<double>(escapeCount);
+                histogramFactor = smoothEscapeIterationCounterSum(escapeIterationCount) / static_cast<double>(escapeCount);
+                // velocityFactor is just the normalized continuous escape iteration count
+                velocityFactor = escapeIterationCount / iterationCount;
 
-                colour = shading.shade(colourFactor);
+                colour = shading.shade(histogramFactor, velocityFactor);
 
                 texturePixels[y * texturePitch + x * 4] = static_cast<unsigned char>(get<2>(colour));
                 texturePixels[y * texturePitch + x * 4 + 1] = static_cast<unsigned char>(get<1>(colour));

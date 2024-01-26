@@ -10,6 +10,7 @@
 MandelbrotGrid::MandelbrotGrid()
 {
     m_iterationCount = 0;
+    safe_iterationCount = 0;
     m_iterationMaximum = 4096;
     m_escapeRadius = 2.0;
     m_width = 1;
@@ -70,6 +71,7 @@ void MandelbrotGrid::resetGrid()
     safe_escapeIterationCounterSums.resize(m_iterationMaximum, 0);
 
     m_iterationCount = 0;
+    safe_iterationCount = 0;
 }
 
 void MandelbrotGrid::calculationLoop()
@@ -91,9 +93,11 @@ int MandelbrotGrid::getMaxIterationCount()
     return m_iterationMaximum;
 }
 
-void MandelbrotGrid::getFrameData(int &escapeCount, std::vector<double> &magnitudeGrid, std::vector<int> &iterationGrid, std::vector<int> &escapeIterationCounterSums)
+void MandelbrotGrid::getFrameData(int &iterationCount, int &escapeCount, std::vector<double> &magnitudeGrid, std::vector<int> &iterationGrid, std::vector<int> &escapeIterationCounterSums)
 {
     std::lock_guard<std::mutex> lock(calculationMutex);
+
+    iterationCount = safe_iterationCount;
 
     escapeCount = safe_escapeCount;
 
@@ -221,6 +225,7 @@ void MandelbrotGrid::iterateGrid()
                 safe_escapeIterationCounterSums[i] = std::accumulate(escapeIterationCounter.begin(), escapeIterationCounter.begin() + i + 1, 0);
             }
             m_iterationCount++;
+            safe_iterationCount++;
         }
 
         if (m_iterationCount >= m_iterationMaximum)
