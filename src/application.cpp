@@ -1,6 +1,7 @@
 #include "application.hpp"
 
 #include <chrono>
+#include <thread>
 #include <iostream>
 #include <cmath>
 
@@ -30,7 +31,9 @@ void MandelbrotApplication::run()
 
     std::chrono::duration<double> delta;
 
-    int counter = 0;
+    int frameCounter = 0;
+
+    calculationThread = std::thread(&MandelbrotGrid::calculationLoop, &mandelbrotGrid);
 
     isRunning = true;
     draw();
@@ -41,17 +44,19 @@ void MandelbrotApplication::run()
 
         handleEvents();
 
-        tick();
-
         draw();
 
         delta = now() - start;
 
-        if (counter % 600 == 0)
+        if (frameCounter % static_cast<int>(10.0 / delta.count() + 0.0001) == 0)
             std::cout << delta.count() << "\n";
         
-        counter += 1;
+        frameCounter += 1;
     }
+
+    mandelbrotGrid.stop();
+
+    calculationThread.join();
 
     destroySdl();
 }
@@ -72,7 +77,7 @@ void MandelbrotApplication::initializeSdl()
         displayWidth, displayHeight,
         windowFlags);
     
-    uint32_t renderFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC;
+    uint32_t renderFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
     renderer = SDL_CreateRenderer(window, -1, renderFlags);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
@@ -194,27 +199,35 @@ void MandelbrotApplication::handleEvents()
     }
 }
 
-void MandelbrotApplication::tick()
-{
-    if (mandelbrotGrid.getIterationCount() == 0)
-    {
-        do
-        {
-            mandelbrotGrid.tick();
-        } while (mandelbrotGrid.getEscapeCount() == 0 and mandelbrotGrid.getIterationCount() < 32);
-        return;
-    }
-
-    mandelbrotGrid.tick();
-}
-
 void MandelbrotApplication::draw()
 {
-    int width = mandelbrotGrid.width();
-    int height = mandelbrotGrid.height();
-    double escapeCount = mandelbrotGrid.getEscapeCount();
+    // int width = mandelbrotGrid.width();
+    // int height = mandelbrotGrid.height();
+    // double escapeCount = mandelbrotGrid.getEscapeCount();
+    // double localValueMagnitude;
+
+    int escapeCount;
+    std::vector<double> magnitudeGrid;
+    std::vector<int> iterationGrid;
+    std::vector<int> escapeIterationCounterSums;
+
+    mandelbrotGrid.getFrameData(escapeCount, magnitudeGrid, iterationGrid, escapeIterationCounterSums);
+
+    auto smoothEscapeIterationCounterSum = [escapeIterationCounterSums](const double escapeIterationCount) -> double
+    {
+        int a = floor(escapeIterationCount);
+        if (a < 0) a = 0;
+
+        int b = ceil(escapeIterationCount);
+        if (b > escapeIterationCounterSums.size() - 1) b = escapeIterationCounterSums.size() - 1;
+
+        if (b <= a) return escapeIterationCounterSums[static_cast<int>(escapeIterationCount)];
+
+        double i = static_cast<double>(escapeIterationCount - a) / static_cast<double>(b - a);
+        return escapeIterationCounterSums[a] + i * (escapeIterationCounterSums[b] - escapeIterationCounterSums[a]);
+    };
+
     double escapeIterationCount;
-    double localValueMagnitude;
     double colourFactor;
     Shading::Colour colour;
 
@@ -222,20 +235,18 @@ void MandelbrotApplication::draw()
     SDL_SetRenderDrawColor(renderer, get<0>(colour), get<1>(colour), get<2>(colour), 255);
     SDL_RenderClear(renderer);
 
-    SDL_LockTexture(renderTexture, NULL, (void**)&texturePixels, &texturePitch);
+    SDL_LockTexture(renderTexture, NULL, reinterpret_cast<void**>(&texturePixels), &texturePitch);
 
-    for (int x = 0; x < width; x++)
+    for (int x = 0; x < displayWidth; x++)
     {
-        for (int y = 0; y < height; y++)
+        for (int y = 0; y < displayHeight; y++)
         {
-            if (mandelbrotGrid.divergesAt(x, y))
+            if (magnitudeGrid[x * displayHeight + y] > 2.0)
             {
-                escapeIterationCount = mandelbrotGrid.iterationsAt(x, y);
-                localValueMagnitude = mandelbrotGrid.valueAt(x, y).magnitude();
                 // calculate continuous number of iterations to escape
-                escapeIterationCount = (escapeIterationCount - log2(log2(localValueMagnitude)));
+                escapeIterationCount = (iterationGrid[x * displayHeight + y] - log2(log2(magnitudeGrid[x * displayHeight + y])));
                 // get Lerped summed histogram for continuous histogram shading
-                colourFactor = 1.0 - mandelbrotGrid.getEscapeIterationCounterSum(escapeIterationCount) / escapeCount;
+                colourFactor = 1.0 - smoothEscapeIterationCounterSum(escapeIterationCount) / static_cast<double>(escapeCount);
 
                 colour = shading.shade(colourFactor);
 
