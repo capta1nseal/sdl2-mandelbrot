@@ -201,11 +201,33 @@ void MandelbrotApplication::handleEvents()
 
 void MandelbrotApplication::draw()
 {
-    int width = mandelbrotGrid.width();
-    int height = mandelbrotGrid.height();
-    double escapeCount = mandelbrotGrid.getEscapeCount();
+    // int width = mandelbrotGrid.width();
+    // int height = mandelbrotGrid.height();
+    // double escapeCount = mandelbrotGrid.getEscapeCount();
+    // double localValueMagnitude;
+
+    int escapeCount;
+    std::vector<double> magnitudeGrid;
+    std::vector<int> iterationGrid;
+    std::vector<int> escapeIterationCounterSums;
+
+    mandelbrotGrid.getFrameData(escapeCount, magnitudeGrid, iterationGrid, escapeIterationCounterSums);
+
+    auto smoothEscapeIterationCounterSum = [escapeIterationCounterSums](const double escapeIterationCount) -> double
+    {
+        int a = floor(escapeIterationCount);
+        if (a < 0) a = 0;
+
+        int b = ceil(escapeIterationCount);
+        if (b > escapeIterationCounterSums.size() - 1) b = escapeIterationCounterSums.size() - 1;
+
+        if (b <= a) return escapeIterationCounterSums[static_cast<int>(escapeIterationCount)];
+
+        double i = static_cast<double>(escapeIterationCount - a) / static_cast<double>(b - a);
+        return escapeIterationCounterSums[a] + i * (escapeIterationCounterSums[b] - escapeIterationCounterSums[a]);
+    };
+
     double escapeIterationCount;
-    double localValueMagnitude;
     double colourFactor;
     Shading::Colour colour;
 
@@ -213,20 +235,18 @@ void MandelbrotApplication::draw()
     SDL_SetRenderDrawColor(renderer, get<0>(colour), get<1>(colour), get<2>(colour), 255);
     SDL_RenderClear(renderer);
 
-    SDL_LockTexture(renderTexture, NULL, (void**)&texturePixels, &texturePitch);
+    SDL_LockTexture(renderTexture, NULL, reinterpret_cast<void**>(&texturePixels), &texturePitch);
 
-    for (int x = 0; x < width; x++)
+    for (int x = 0; x < displayWidth; x++)
     {
-        for (int y = 0; y < height; y++)
+        for (int y = 0; y < displayHeight; y++)
         {
-            if (mandelbrotGrid.divergesAt(x, y))
+            if (magnitudeGrid[x * displayHeight + y] > 2.0)
             {
-                escapeIterationCount = mandelbrotGrid.iterationsAt(x, y);
-                localValueMagnitude = mandelbrotGrid.valueAt(x, y).magnitude();
                 // calculate continuous number of iterations to escape
-                escapeIterationCount = (escapeIterationCount - log2(log2(localValueMagnitude)));
+                escapeIterationCount = (iterationGrid[x * displayHeight + y] - log2(log2(magnitudeGrid[x * displayHeight + y])));
                 // get Lerped summed histogram for continuous histogram shading
-                colourFactor = 1.0 - mandelbrotGrid.getEscapeIterationCounterSum(escapeIterationCount) / escapeCount;
+                colourFactor = 1.0 - smoothEscapeIterationCounterSum(escapeIterationCount) / static_cast<double>(escapeCount);
 
                 colour = shading.shade(colourFactor);
 

@@ -21,31 +21,9 @@ public:
 
     void stop();
 
-    void tick();
-
-    int width();
-    int height();
-
-    double getViewScale();
-
-    Complex valueAt(int x, int y);
-
-    bool divergesAt(int x, int y);
-
-    int getIterationCount();
-
-    int getEscapeCount();
-
     int getMaxIterationCount();
 
-    int getEscapeIterationCounter(int i);
-
-    int getEscapeIterationCounterSum(int i);
-    double getEscapeIterationCounterSum(double i);
-
-    double getEscapeRadius();
-
-    int iterationsAt(int x, int y);
+    void getFrameData(int &escapeCount, std::vector<double> &magnitudeGrid, std::vector<int> &iterationGrid, std::vector<int> &escapeIterationCounterSums);
 
     void zoomIn(double factor);
     void zoomOut(double factor);
@@ -57,9 +35,15 @@ public:
 private:
     std::vector<Complex> grid;
     std::vector<int> iterationGrid;
+
+    std::vector<double> safe_magnitudeGrid;
+    std::vector<int> safe_iterationGrid;
+
     std::vector<int> escapeIterationCounter;
-    std::vector<int> escapeIterationCounterSums;
+    std::vector<int> safe_escapeIterationCounterSums;
+
     int m_escapeCount;
+    int safe_escapeCount;
     int m_iterationCount;
     int m_iterationMaximum;
     double m_escapeRadius;
@@ -70,6 +54,7 @@ private:
 
     bool isRunning;
     std::mutex calculationMutex;
+    bool invalidateCurrentIteration;
 
     Complex mapToComplex(double x, double y);
 

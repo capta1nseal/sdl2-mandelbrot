@@ -40,18 +40,26 @@ void MandelbrotGrid::resizeGrid(int width, int height)
 void MandelbrotGrid::resetGrid()
 {
     std::lock_guard<std::mutex> lock(calculationMutex);
+    invalidateCurrentIteration = true;
 
     grid.resize(m_width * m_height);
     grid.assign(m_width * m_height, Complex(0.0, 0.0));
 
+    safe_magnitudeGrid.resize(m_width * m_height);
+    safe_magnitudeGrid.assign(m_width * m_height, 0.0);
+
     iterationGrid.resize(m_width * m_height);
     iterationGrid.assign(m_width * m_height, 0);
 
+    safe_iterationGrid.resize(m_width * m_height);
+    safe_iterationGrid.assign(m_width * m_height, 0);
+
     m_escapeCount = 0;
+    safe_escapeCount = 0;
     escapeIterationCounter.resize(m_iterationMaximum);
     escapeIterationCounter.assign(m_iterationMaximum, 0);
-    escapeIterationCounterSums.resize(m_iterationMaximum);
-    escapeIterationCounterSums.resize(m_iterationMaximum, 0);
+    safe_escapeIterationCounterSums.resize(m_iterationMaximum);
+    safe_escapeIterationCounterSums.resize(m_iterationMaximum, 0);
 
     m_iterationCount = 0;
 }
@@ -70,101 +78,64 @@ void MandelbrotGrid::stop()
     isRunning = false;
 }
 
-int MandelbrotGrid::width()
-{
-    return m_width;
-}
-int MandelbrotGrid::height()
-{
-    return m_height;
-}
-
-double MandelbrotGrid::getViewScale()
-{
-    return m_viewScale;
-}
-
-Complex MandelbrotGrid::valueAt(int x, int y)
-{
-    return grid[x * m_height + y];
-}
-
-bool MandelbrotGrid::divergesAt(int x, int y)
-{
-    return valueAt(x, y).magnitude() > m_escapeRadius;
-}
-
-int MandelbrotGrid::getIterationCount()
-{
-    return m_iterationCount;
-}
-
-int MandelbrotGrid::getEscapeCount()
-{
-    return m_escapeCount;
-}
-
-int MandelbrotGrid::getEscapeIterationCounter(int i)
-{
-    return escapeIterationCounter[i];
-}
-
-int MandelbrotGrid::getEscapeIterationCounterSum(int i)
-{
-    return escapeIterationCounterSums[i];
-}
-double MandelbrotGrid::getEscapeIterationCounterSum(double i)
-{
-    int a = floor(i);
-    if (a < 0) a = 0;
-
-    int b = ceil(i);
-    if (b > m_iterationMaximum - 1) b = m_iterationMaximum - 1;
-
-    if (b <= a) return escapeIterationCounterSums[static_cast<int>(i)];
-
-    i = static_cast<double>(i - a) / static_cast<double>(b - a);
-    return escapeIterationCounterSums[a] + i * (escapeIterationCounterSums[b] - escapeIterationCounterSums[a]);
-}
-
-double MandelbrotGrid::getEscapeRadius()
-{
-    return m_escapeRadius;
-}
-
 int MandelbrotGrid::getMaxIterationCount()
 {
     return m_iterationMaximum;
 }
 
-int MandelbrotGrid::iterationsAt(int x, int y)
+void MandelbrotGrid::getFrameData(int &escapeCount, std::vector<double> &magnitudeGrid, std::vector<int> &iterationGrid, std::vector<int> &escapeIterationCounterSums)
 {
-    return iterationGrid[x * m_height + y];
+    std::lock_guard<std::mutex> lock(calculationMutex);
+
+    escapeCount = safe_escapeCount;
+
+    magnitudeGrid = safe_magnitudeGrid;
+
+    iterationGrid = safe_iterationGrid;
+
+    escapeIterationCounterSums = safe_escapeIterationCounterSums;
 }
+
+//int MandelbrotGrid::iterationsAt(int x, int y)
+//{
+//    return iterationGrid[x * m_height + y];
+//}
 
 void MandelbrotGrid::zoomIn(double factor)
 {
+    {
+        std::lock_guard<std::mutex> lock(calculationMutex);
     m_viewScale *= factor;
+    }
     resetGrid();
     std::cout << m_viewScale << "\n";
 }
 void MandelbrotGrid::zoomOut(double factor)
 {
+    {
+        std::lock_guard<std::mutex> lock(calculationMutex);
     m_viewScale /= factor;
+    }
     resetGrid();
     std::cout << m_viewScale << "\n";
 }
 
 void MandelbrotGrid::zoomOnPixel(int x, int y)
 {
+    {
+        std::lock_guard<std::mutex> lock(calculationMutex);
     m_viewCenter.set(mapToComplex(x, y));
     m_viewScale *= 2;
+    }
     resetGrid();
 }
 
 void MandelbrotGrid::move(double real, double imag)
 {
+    {
+        std::lock_guard<std::mutex> lock(calculationMutex);
     m_viewCenter.add(Complex(real / m_viewScale, imag / m_viewScale));
+    }
     resetGrid();
     std::cout << "(" << m_viewCenter.real << "," << m_viewCenter.imag << ")\n";
 }
@@ -198,33 +169,51 @@ void MandelbrotGrid::incrementIterationGrid(int x, int y)
 
 void MandelbrotGrid::iterateGrid()
 {
+
     if (m_iterationCount < m_iterationMaximum)
     {
-        for (int x = 0; x < m_width; x++)
         {
             std::lock_guard<std::mutex> lock(calculationMutex);
+    
+            invalidateCurrentIteration = false;
+        }
+        for (int x = 0; x < m_width; x++)
+        {
             for (int y = 0; y < m_height; y++)
             {
-                if (valueAt(x, y).magnitude() <= m_escapeRadius)
+                if (grid[x * m_height + y].magnitude() <= m_escapeRadius)
                 {
                     grid[x * m_height + y].squaredPlus(mapToComplex(x, y));
                     incrementIterationGrid(x, y);
 
-                    if (valueAt(x, y).magnitude() > m_escapeRadius)
+                    if (grid[x * m_height + y].magnitude() > m_escapeRadius)
                     {
                         m_escapeCount++;
-                        escapeIterationCounter[iterationsAt(x, y)]++;
+                        escapeIterationCounter[iterationGrid[x * m_height + y]]++;
                     }
                 }
             }
+            if (invalidateCurrentIteration) break;
         }
+        
+        if (not invalidateCurrentIteration)
+        {// update data once full iteration has been processed to be accessed by renderer
+            std::lock_guard<std::mutex> lock(calculationMutex);
 
-        std::lock_guard<std::mutex> lock(calculationMutex);
-        for (int i = 0; i < m_iterationMaximum; i++)
-        {
-            escapeIterationCounterSums[i] = std::accumulate(escapeIterationCounter.begin(), escapeIterationCounter.begin() + i + 1, 0);
+            safe_escapeCount = m_escapeCount;
+
+            for (int i = 0; i < m_width * m_height; i++)
+            {
+                safe_magnitudeGrid[i] = grid[i].magnitude();
+                safe_iterationGrid[i] = iterationGrid[i];
+            }
+
+            for (int i = 0; i < m_iterationMaximum; i++)
+            {
+                safe_escapeIterationCounterSums[i] = std::accumulate(escapeIterationCounter.begin(), escapeIterationCounter.begin() + i + 1, 0);
+            }
+            m_iterationCount++;
         }
-        m_iterationCount++;
 
         if (m_iterationCount >= m_iterationMaximum)
         {
