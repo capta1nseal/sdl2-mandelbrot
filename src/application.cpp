@@ -103,7 +103,7 @@ void MandelbrotApplication::initializeGrid()
 
 void MandelbrotApplication::initializeShading()
 {
-    shading.setShadingFunction(0);
+    shading.setShadingFunction(2);
 }
 
 void MandelbrotApplication::initializeRenderTexture()

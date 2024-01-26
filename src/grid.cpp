@@ -21,18 +21,26 @@ MandelbrotGrid::MandelbrotGrid()
 
 void MandelbrotGrid::initializeGrid(int width, int height, double viewCenterReal, double viewCenterImag, double viewScale)
 {
-    m_viewCenter.set(viewCenterReal, viewCenterImag);
-    m_viewScale = viewScale;
+    {
+        std::lock_guard<std::mutex> lock(calculationMutex);
+
+        m_viewCenter.set(viewCenterReal, viewCenterImag);
+        m_viewScale = viewScale;
+    }
 
     resizeGrid(width, height);
 }
 
 void MandelbrotGrid::resizeGrid(int width, int height)
 {
-    m_width = width;
-    m_height = height;
+    {
+        std::lock_guard<std::mutex> lock(calculationMutex);
 
-    aspectRatio = static_cast<double>(m_width) / static_cast<double>(m_height);
+        m_width = width;
+        m_height = height;
+
+        aspectRatio = static_cast<double>(m_width) / static_cast<double>(m_height);
+    }
 
     resetGrid();
 }
@@ -174,7 +182,7 @@ void MandelbrotGrid::iterateGrid()
     {
         {
             std::lock_guard<std::mutex> lock(calculationMutex);
-    
+
             invalidateCurrentIteration = false;
         }
         for (int x = 0; x < m_width; x++)
