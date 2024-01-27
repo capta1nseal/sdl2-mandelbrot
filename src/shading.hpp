@@ -9,24 +9,24 @@ class Shading
 public:
     using Colour = std::tuple<int, int, int>;
     using HsvColour = std::tuple<double, double, double>;
-    using ShadingFunction = Colour (Shading::*)(double, double);
+    using ShadingFunction = Colour (Shading::*)(double);
 
     Shading();
 
-    Colour shade(double colourFactor, double velocityFactor);
+    Colour shade(double colourFactor);
 
     void setShadingFunction(int functionNumber);
 
 private:
     ShadingFunction shadingFunction;
 
-    Colour shadeGreyscale(double histogramFactor, double velocityFactor);
+    Colour shadeGreyscale(double histogramFactor);
 
-    Colour shadeGreyscaleInverse(double histogramFactor, double velocityFactor);
+    Colour shadeGreyscaleInverse(double histogramFactor);
 
-    Colour shadeHsv(double histogramFactor, double velocityFactor);
+    Colour shadeHsv(double histogramFactor);
 
-    Colour shadeMidnightCherry(double histogramFactor, double velocityFactor);
+    Colour shadeMidnightCherry(double histogramFactor);
 
     Colour hsvToRgb(double hue, double saturation, double value);
     Colour hsvToRgb(HsvColour hsvColour);

@@ -233,10 +233,9 @@ void MandelbrotApplication::draw()
 
     double escapeIterationCount;
     double histogramFactor;
-    double velocityFactor;
     Shading::Colour colour;
 
-    colour = shading.shade(1.0, 1.0);
+    colour = shading.shade(1.0);
     SDL_SetRenderDrawColor(renderer, get<0>(colour), get<1>(colour), get<2>(colour), 255);
     SDL_RenderClear(renderer);
 
@@ -252,10 +251,8 @@ void MandelbrotApplication::draw()
                 escapeIterationCount = (iterationGrid[x * displayHeight + y] - log2(log2(magnitudeGrid[x * displayHeight + y])));
                 // get Lerped summed histogram for continuous histogram shading
                 histogramFactor = smoothEscapeIterationCounterSum(escapeIterationCount) / static_cast<double>(escapeCount);
-                // velocityFactor is just the normalized continuous escape iteration count
-                velocityFactor = escapeIterationCount / iterationCount;
 
-                colour = shading.shade(histogramFactor, velocityFactor);
+                colour = shading.shade(histogramFactor);
 
                 texturePixels[y * texturePitch + x * 4] = static_cast<unsigned char>(get<2>(colour));
                 texturePixels[y * texturePitch + x * 4 + 1] = static_cast<unsigned char>(get<1>(colour));

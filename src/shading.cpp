@@ -10,9 +10,9 @@ Shading::Shading()
     shadingFunction = &Shading::shadeGreyscale;
 }
 
-Shading::Colour Shading::shade(double histogramFactor, double velocityFactor)
+Shading::Colour Shading::shade(double histogramFactor)
 {
-    return (this->*shadingFunction)(histogramFactor, velocityFactor);
+    return (this->*shadingFunction)(histogramFactor);
 }
 
 void Shading::setShadingFunction(int functionNumber)
@@ -37,25 +37,25 @@ void Shading::setShadingFunction(int functionNumber)
     }
 }
 
-Shading::Colour Shading::shadeGreyscale(double histogramFactor, double velocityFactor)
+Shading::Colour Shading::shadeGreyscale(double histogramFactor)
 {
-    return shadeGreyscaleInverse(1.0 - histogramFactor, 1.0 - velocityFactor);
+    return shadeGreyscaleInverse(1.0 - histogramFactor);
 }
 
-Shading::Colour Shading::shadeGreyscaleInverse(double histogramFactor, double velocityFactor)
+Shading::Colour Shading::shadeGreyscaleInverse(double histogramFactor)
 {
     int alpha = histogramFactor * 255;
 
     return {alpha, alpha, alpha};
 }
 
-Shading::Colour Shading::shadeHsv(double histogramFactor, double velocityFactor)
+Shading::Colour Shading::shadeHsv(double histogramFactor)
 {
     histogramFactor = 1.0 - histogramFactor;
     return hsvToRgb(histogramFactor * 720 + 300, 0.75 + histogramFactor / 4.0, 1.0);
 }
 
-Shading::Colour Shading::shadeMidnightCherry(double histogramFactor, double velocityFactor)
+Shading::Colour Shading::shadeMidnightCherry(double histogramFactor)
 {
     HsvColour midnight = {250.0, 0.80, 0.20};
     HsvColour cherry   = {315.0, 0.90, 0.80};
