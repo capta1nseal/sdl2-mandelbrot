@@ -62,7 +62,7 @@ Shading::Colour Shading::shadeMidnightCherry(double histogramFactor)
 
     std::vector<std::pair<double, HsvColour>> hsvPath = {
         {0.0,  midnight},
-        {0.85, cherry},
+        {0.60, cherry},
         {1.0,  midnight}
     };
     return colourRamp(hsvPath, histogramFactor);
