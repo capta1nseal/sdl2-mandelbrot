@@ -101,6 +101,9 @@ void MandelbrotApplication::initializeGrid()
     // testing spot for high-end of values
     // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.172403, 0.563459, 8192);
 
+    // testing spot for very high detail and iteration count
+    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.330646, -0.39128, 46736.3);
+
     initializeRenderTexture();
 }
 
@@ -204,11 +207,6 @@ void MandelbrotApplication::handleEvents()
 
 void MandelbrotApplication::draw()
 {
-    // int width = mandelbrotGrid.width();
-    // int height = mandelbrotGrid.height();
-    // double escapeCount = mandelbrotGrid.getEscapeCount();
-    // double localValueMagnitude;
-
     int iterationCount;
     int escapeCount;
     std::vector<double> magnitudeGrid;
@@ -250,7 +248,7 @@ void MandelbrotApplication::draw()
                 // calculate continuous number of iterations to escape
                 escapeIterationCount = (iterationGrid[x * displayHeight + y] - log2(log2(magnitudeGrid[x * displayHeight + y])));
                 // get Lerped summed histogram for continuous histogram shading
-                histogramFactor = smoothEscapeIterationCounterSum(escapeIterationCount) / static_cast<double>(escapeCount);
+                histogramFactor = smoothEscapeIterationCounterSum(escapeIterationCount - 1.0) / static_cast<double>(escapeCount);
 
                 colour = shading.shade(histogramFactor);
 

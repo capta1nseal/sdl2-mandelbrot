@@ -196,7 +196,7 @@ void MandelbrotGrid::iterateGrid()
                     if (grid[x * m_height + y].magnitude() > m_escapeRadius)
                     {
                         m_escapeCount++;
-                        escapeIterationCounter[m_iterationGrid[x * m_height + y]]++;
+                        escapeIterationCounter[m_iterationGrid[x * m_height + y] - 1]++;
                     }
                 }
             }
@@ -215,9 +215,11 @@ void MandelbrotGrid::iterateGrid()
                 safe_iterationGrid[i] = m_iterationGrid[i];
             }
 
-            for (int i = 0; i < m_iterationMaximum; i++)
+            safe_escapeIterationCounterSums[0] = escapeIterationCounter[0];
+            for (int i = 1; i < m_iterationMaximum; i++)
             {
-                safe_escapeIterationCounterSums[i] = std::accumulate(escapeIterationCounter.begin(), escapeIterationCounter.begin() + i + 1, 0);
+                // safe_escapeIterationCounterSums[i] = std::accumulate(escapeIterationCounter.begin(), escapeIterationCounter.begin() + i + 1, 0);
+                safe_escapeIterationCounterSums[i] = safe_escapeIterationCounterSums[i - 1] + escapeIterationCounter[i];
             }
             m_iterationCount++;
             safe_iterationCount++;
