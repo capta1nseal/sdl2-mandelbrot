@@ -26,12 +26,13 @@ private:
 
     Colour shadeHsv(double histogramFactor);
 
+    std::vector<std::pair<double, HsvColour>> midnightCherryPath;
     Colour shadeMidnightCherry(double histogramFactor);
 
     Colour hsvToRgb(double hue, double saturation, double value);
     Colour hsvToRgb(HsvColour hsvColour);
 
-    Colour colourRamp(std::vector<std::pair<double, HsvColour>> hsvPath, double factor);
+    Colour colourRamp(const std::vector<std::pair<double, HsvColour>>& hsvPath, double factor);
 
     double lerp(double min, double max, double normalizedFactor);
     HsvColour lerp(HsvColour minColour, HsvColour maxColour, double normalizedFactor);

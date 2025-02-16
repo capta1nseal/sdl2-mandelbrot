@@ -2,12 +2,21 @@
 
 #include <vector>
 #include <utility>
-#include <tuple>
 #include <cmath>
 
 Shading::Shading()
 {
     shadingFunction = &Shading::shadeGreyscale;
+    {
+        HsvColour midnight = {250.0, 0.80, 0.20};
+        HsvColour cherry   = {315.0, 0.90, 0.80};
+        
+        midnightCherryPath = {
+            {0.0,  midnight},
+            {0.60, cherry},
+            {1.0,  midnight}
+        };
+    }
 }
 
 Shading::Colour Shading::shade(double histogramFactor)
@@ -57,15 +66,7 @@ Shading::Colour Shading::shadeHsv(double histogramFactor)
 
 Shading::Colour Shading::shadeMidnightCherry(double histogramFactor)
 {
-    HsvColour midnight = {250.0, 0.80, 0.20};
-    HsvColour cherry   = {315.0, 0.90, 0.80};
-
-    std::vector<std::pair<double, HsvColour>> hsvPath = {
-        {0.0,  midnight},
-        {0.60, cherry},
-        {1.0,  midnight}
-    };
-    return colourRamp(hsvPath, histogramFactor);
+    return colourRamp(midnightCherryPath, histogramFactor);
 }
 
 Shading::Colour Shading::hsvToRgb(double hue, double saturation, double value)
@@ -173,7 +174,7 @@ Shading::Colour Shading::hsvToRgb(HsvColour hsvColour)
     return {r, g, b};
 }
 
-Shading::Colour Shading::colourRamp(std::vector<std::pair<double, HsvColour>> hsvPath, double factor)
+Shading::Colour Shading::colourRamp(const std::vector<std::pair<double, HsvColour>>& hsvPath, double factor)
 {
     // case if factor is less than first colour in path
     if (factor <= hsvPath[0].first)
