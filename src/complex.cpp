@@ -74,7 +74,7 @@ Complex Complex::squareInplace() {
     return multiplyInplace(Complex(real, imag));
 }
 
-void Complex::squaredPlus(Complex other) {
+void Complex::squareAdd(Complex other) {
     double realSquared = real * real;
     double imagSquared = imag * imag;
     imag = (real + real) * imag + other.imag;

@@ -172,7 +172,7 @@ void MandelbrotGrid::iterateGrid() {
             for (int y = 0; y < m_height; y++) {
                 if (grid[x * m_height + y].magnitudeSquared() <=
                     (m_escapeRadius * m_escapeRadius)) {
-                    grid[x * m_height + y].squaredPlus(mapToComplex(x, y));
+                    grid[x * m_height + y].squareAdd(mapToComplex(x, y));
                     incrementIterationGrid(x, y);
 
                     if (grid[x * m_height + y].magnitudeSquared() >

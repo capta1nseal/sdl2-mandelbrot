@@ -31,7 +31,7 @@ struct Complex {
     void square();
     Complex squareInplace();
 
-    void squaredPlus(Complex other);
+    void squareAdd(Complex other);
 
     void scale(double scalar);
     Complex scaleInplace(double scalar);
