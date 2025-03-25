@@ -4,6 +4,8 @@
 #include <tuple>
 #include <vector>
 
+// Class for handling shading, in this case meaning:
+// Converts a scalar into RGB.
 class Shading {
 public:
     using Colour = std::tuple<int, int, int>;

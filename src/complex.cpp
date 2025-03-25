@@ -7,17 +7,17 @@ Complex::Complex() {
     imag = 0.0;
 }
 
-Complex::Complex(double realComponent, double imaginaryComponent)
-    : real(realComponent), imag(imaginaryComponent) {}
+Complex::Complex(double initReal, double initImag)
+    : real(initReal), imag(initImag) {}
 
 void Complex::zero() {
     real = 0.0;
     imag = 0.0;
 }
 
-void Complex::set(double realComponent, double imaginaryComponent) {
-    real = realComponent;
-    imag = imaginaryComponent;
+void Complex::set(double initReal, double initImag) {
+    real = initReal;
+    imag = initImag;
 }
 void Complex::set(Complex other) {
     real = other.real;

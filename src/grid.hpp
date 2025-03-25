@@ -6,6 +6,7 @@
 
 #include "complex.hpp"
 
+// Wrapper for data and number crunching for the fractal solver.
 class MandelbrotGrid {
 public:
     MandelbrotGrid();

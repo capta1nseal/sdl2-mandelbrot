@@ -11,6 +11,8 @@
 
 std::chrono::_V2::steady_clock::time_point now();
 
+// Wrapper class for the application.
+// Due to being lazy, holds the code for SDL2.
 class MandelbrotApplication {
 public:
     MandelbrotApplication();

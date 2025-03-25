@@ -1,16 +1,17 @@
 #ifndef _MANDELBROTCOMPLEX
 #define _MANDELBROTCOMPLEX
 
+// Simple complex struct with probably too many functions.
 struct Complex {
     double real;
     double imag;
 
     Complex();
-    Complex(double realComponent, double imaginaryComponent);
+    Complex(double initReal, double initImag);
 
     void zero();
 
-    void set(double realComponent, double imaginaryComponent);
+    void set(double initReal, double initImag);
     void set(Complex other);
     void set(Complex *other);
 
