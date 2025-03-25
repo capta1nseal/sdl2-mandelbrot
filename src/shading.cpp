@@ -162,9 +162,12 @@ Shading::Colour Shading::hsvToRgb(HsvColour hsvColour) {
 Shading::Colour
 Shading::colourRamp(const std::vector<std::pair<double, HsvColour>> &hsvPath,
                     double factor) {
-    // case if factor is less than first colour in path
+    // cases where factor is outside the bounds of the input values
     if (factor <= hsvPath[0].first) {
         return hsvToRgb(hsvPath[0].second);
+    }
+    if (factor >= hsvPath[hsvPath.size() - 1].first) {
+        return hsvToRgb(hsvPath[hsvPath.size() - 1].second);
     }
 
     // all cases which blend between two colours
