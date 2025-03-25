@@ -204,13 +204,11 @@ void MandelbrotApplication::draw() {
     auto smoothEscapeIterationCounterSum =
         [escapeIterationCounterSums](
             const double escapeIterationCount) -> double {
-        int a = floor(escapeIterationCount);
-        if (a < 0)
-            a = 0;
+        int a = std::max(static_cast<int>(floor(escapeIterationCount)), 0);
 
-        int b = ceil(escapeIterationCount);
-        if (b > static_cast<int>(escapeIterationCounterSums.size()) - 1)
-            b = escapeIterationCounterSums.size() - 1;
+        int b =
+            std::min(static_cast<int>(ceil(escapeIterationCount)),
+                     static_cast<int>(escapeIterationCounterSums.size()) - 1);
 
         if (b <= a)
             return escapeIterationCounterSums[static_cast<int>(
