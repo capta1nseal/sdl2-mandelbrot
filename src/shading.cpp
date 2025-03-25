@@ -1,33 +1,25 @@
 #include "shading.hpp"
 
-#include <vector>
-#include <utility>
 #include <cmath>
+#include <utility>
+#include <vector>
 
-Shading::Shading()
-{
+Shading::Shading() {
     shadingFunction = &Shading::shadeGreyscale;
     {
         HsvColour midnight = {250.0, 0.80, 0.20};
-        HsvColour cherry   = {315.0, 0.90, 0.80};
-        
-        midnightCherryPath = {
-            {0.0,  midnight},
-            {0.60, cherry},
-            {1.0,  midnight}
-        };
+        HsvColour cherry = {315.0, 0.90, 0.80};
+
+        midnightCherryPath = {{0.0, midnight}, {0.60, cherry}, {1.0, midnight}};
     }
 }
 
-Shading::Colour Shading::shade(double histogramFactor)
-{
+Shading::Colour Shading::shade(double histogramFactor) {
     return (this->*shadingFunction)(histogramFactor);
 }
 
-void Shading::setShadingFunction(int functionNumber)
-{
-    switch (functionNumber)
-    {
+void Shading::setShadingFunction(int functionNumber) {
+    switch (functionNumber) {
     case 0:
         shadingFunction = &Shading::shadeGreyscale;
         break;
@@ -46,31 +38,27 @@ void Shading::setShadingFunction(int functionNumber)
     }
 }
 
-Shading::Colour Shading::shadeGreyscale(double histogramFactor)
-{
+Shading::Colour Shading::shadeGreyscale(double histogramFactor) {
     return shadeGreyscaleInverse(1.0 - histogramFactor);
 }
 
-Shading::Colour Shading::shadeGreyscaleInverse(double histogramFactor)
-{
+Shading::Colour Shading::shadeGreyscaleInverse(double histogramFactor) {
     int alpha = histogramFactor * 255;
 
     return {alpha, alpha, alpha};
 }
 
-Shading::Colour Shading::shadeHsv(double histogramFactor)
-{
+Shading::Colour Shading::shadeHsv(double histogramFactor) {
     histogramFactor = 1.0 - histogramFactor;
-    return hsvToRgb(histogramFactor * 720 + 300, 0.75 + histogramFactor / 4.0, 1.0);
+    return hsvToRgb(histogramFactor * 720 + 300, 0.75 + histogramFactor / 4.0,
+                    1.0);
 }
 
-Shading::Colour Shading::shadeMidnightCherry(double histogramFactor)
-{
+Shading::Colour Shading::shadeMidnightCherry(double histogramFactor) {
     return colourRamp(midnightCherryPath, histogramFactor);
 }
 
-Shading::Colour Shading::hsvToRgb(double hue, double saturation, double value)
-{
+Shading::Colour Shading::hsvToRgb(double hue, double saturation, double value) {
     hue = fmodf64(hue, 360.0) / 60.0;
     long i = static_cast<int>(hue);
     double ff = hue - i;
@@ -82,8 +70,7 @@ Shading::Colour Shading::hsvToRgb(double hue, double saturation, double value)
     int g;
     int b;
 
-    switch (i)
-    {
+    switch (i) {
     case 0:
         r = 255 * value;
         g = 255 * t;
@@ -120,8 +107,7 @@ Shading::Colour Shading::hsvToRgb(double hue, double saturation, double value)
     return {r, g, b};
 }
 
-Shading::Colour Shading::hsvToRgb(HsvColour hsvColour)
-{
+Shading::Colour Shading::hsvToRgb(HsvColour hsvColour) {
     double hue = get<0>(hsvColour);
     double saturation = get<1>(hsvColour);
     double value = get<2>(hsvColour);
@@ -136,8 +122,7 @@ Shading::Colour Shading::hsvToRgb(HsvColour hsvColour)
     int g;
     int b;
 
-    switch (i)
-    {
+    switch (i) {
     case 0:
         r = 255 * value;
         g = 255 * t;
@@ -174,23 +159,23 @@ Shading::Colour Shading::hsvToRgb(HsvColour hsvColour)
     return {r, g, b};
 }
 
-Shading::Colour Shading::colourRamp(const std::vector<std::pair<double, HsvColour>>& hsvPath, double factor)
-{
+Shading::Colour
+Shading::colourRamp(const std::vector<std::pair<double, HsvColour>> &hsvPath,
+                    double factor) {
     // case if factor is less than first colour in path
-    if (factor <= hsvPath[0].first)
-    {
+    if (factor <= hsvPath[0].first) {
         return hsvToRgb(hsvPath[0].second);
     }
 
     // all cases which blend between two colours
     // blending algorithm is lerping h,s,v of both colours
     double scaledFactor;
-    for (unsigned int i = 1; i < hsvPath.size(); i++)
-    {
-        if (factor <= hsvPath[i].first)
-        {
-            scaledFactor = (factor - hsvPath[i - 1].first) / (hsvPath[i].first - hsvPath[i - 1].first);
-            return hsvToRgb(lerp(hsvPath[i - 1].second, hsvPath[i].second, scaledFactor));
+    for (unsigned int i = 1; i < hsvPath.size(); i++) {
+        if (factor <= hsvPath[i].first) {
+            scaledFactor = (factor - hsvPath[i - 1].first) /
+                           (hsvPath[i].first - hsvPath[i - 1].first);
+            return hsvToRgb(
+                lerp(hsvPath[i - 1].second, hsvPath[i].second, scaledFactor));
         }
     }
 
@@ -198,15 +183,12 @@ Shading::Colour Shading::colourRamp(const std::vector<std::pair<double, HsvColou
     return hsvToRgb(hsvPath[hsvPath.size() - 1].second);
 }
 
-double Shading::lerp(double min, double max, double normalizedFactor)
-{
+double Shading::lerp(double min, double max, double normalizedFactor) {
     return min + normalizedFactor * (max - min);
 }
-Shading::HsvColour Shading::lerp(HsvColour minColour, HsvColour maxColour, double normalizedFactor)
-{
-    return {
-        lerp(get<0>(minColour), get<0>(maxColour), normalizedFactor),
-        lerp(get<1>(minColour), get<1>(maxColour), normalizedFactor),
-        lerp(get<2>(minColour), get<2>(maxColour), normalizedFactor)
-    };
+Shading::HsvColour Shading::lerp(HsvColour minColour, HsvColour maxColour,
+                                 double normalizedFactor) {
+    return {lerp(get<0>(minColour), get<0>(maxColour), normalizedFactor),
+            lerp(get<1>(minColour), get<1>(maxColour), normalizedFactor),
+            lerp(get<2>(minColour), get<2>(maxColour), normalizedFactor)};
 }

@@ -1,17 +1,17 @@
 #ifndef _MANDELBROTGRID
 #define _MANDELBROTGRID
 
-#include <vector>
 #include <mutex>
+#include <vector>
 
 #include "complex.hpp"
 
-class MandelbrotGrid
-{
-public:
+class MandelbrotGrid {
+  public:
     MandelbrotGrid();
 
-    void initializeGrid(int width, int height, double viewCenterReal, double viewCenterImag, double viewScale);
+    void initializeGrid(int width, int height, double viewCenterReal,
+                        double viewCenterImag, double viewScale);
 
     void resizeGrid(int width, int height);
 
@@ -23,7 +23,10 @@ public:
 
     int getMaxIterationCount();
 
-    void getFrameData(int &iterationCount, int &escapeCount, std::vector<double> &magnitudeGrid, std::vector<int> &iterationGrid, std::vector<int> &escapeIterationCounterSums);
+    void getFrameData(int &iterationCount, int &escapeCount,
+                      std::vector<double> &magnitudeGrid,
+                      std::vector<int> &iterationGrid,
+                      std::vector<int> &escapeIterationCounterSums);
 
     void zoomIn(double factor);
     void zoomOut(double factor);
@@ -32,7 +35,7 @@ public:
 
     void move(double real, double imag);
 
-private:
+  private:
     std::vector<Complex> grid;
     std::vector<int> m_iterationGrid;
 
@@ -64,7 +67,6 @@ private:
     void incrementIterationGrid(int x, int y);
 
     void iterateGrid();
-
 };
 
 #endif

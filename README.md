@@ -3,7 +3,7 @@ Just a little hobby project in fractal rendering.
 
 ## installation
 - Requires an installation of SDL2 on your include path, or provide your own and link in Makefile.
-- Run ```make``` from project root to build the project, ```make test``` to build and instantly run.
+- Run `make` from project root to build the project, `make test` to build and instantly run. The flag `-j<n>` can be used to set the number of threads to use for the build, where `<n>` is the number of threads.
 
 ### usage
 - run the executable

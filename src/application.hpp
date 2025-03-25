@@ -11,14 +11,13 @@
 
 std::chrono::_V2::steady_clock::time_point now();
 
-class MandelbrotApplication
-{
-public:
+class MandelbrotApplication {
+  public:
     MandelbrotApplication();
 
     void run();
 
-private:
+  private:
     bool isRunning;
     unsigned int displayWidth, displayHeight;
     bool isFullscreen;
@@ -28,7 +27,7 @@ private:
     SDL_Renderer *renderer;
 
     SDL_Texture *renderTexture;
-    unsigned char* texturePixels;
+    unsigned char *texturePixels;
     int texturePitch;
 
     SDL_Event event;
@@ -40,7 +39,7 @@ private:
     std::thread calculationThread;
 
     Shading shading;
-    
+
     void initializeSdl();
     void destroySdl();
 

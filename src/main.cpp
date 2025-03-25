@@ -1,7 +1,6 @@
 #include "application.hpp"
 
-int main()
-{
+int main() {
     auto application = MandelbrotApplication();
 
     application.run();

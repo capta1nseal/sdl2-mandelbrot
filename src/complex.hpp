@@ -1,8 +1,7 @@
 #ifndef _MANDELBROTCOMPLEX
 #define _MANDELBROTCOMPLEX
 
-struct Complex
-{
+struct Complex {
     double real;
     double imag;
 
@@ -37,6 +36,7 @@ struct Complex
     Complex scaleInplace(double scalar);
 
     double magnitude();
+    double magnitudeSquared();
 };
 
 Complex addComplex(Complex first, Complex second);

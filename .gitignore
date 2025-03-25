@@ -1,3 +1,5 @@
+# vscode trash
 .vscode/
-bin/
 
+# build files
+bin/
