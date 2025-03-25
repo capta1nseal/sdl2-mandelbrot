@@ -5,7 +5,7 @@
 #include <vector>
 
 class Shading {
-  public:
+public:
     using Colour = std::tuple<int, int, int>;
     using HsvColour = std::tuple<double, double, double>;
     using ShadingFunction = Colour (Shading::*)(double);
@@ -16,7 +16,7 @@ class Shading {
 
     void setShadingFunction(int functionNumber);
 
-  private:
+private:
     ShadingFunction shadingFunction;
 
     Colour shadeGreyscale(double histogramFactor);

@@ -12,12 +12,12 @@
 std::chrono::_V2::steady_clock::time_point now();
 
 class MandelbrotApplication {
-  public:
+public:
     MandelbrotApplication();
 
     void run();
 
-  private:
+private:
     bool isRunning;
     unsigned int displayWidth, displayHeight;
     bool isFullscreen;

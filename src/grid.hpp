@@ -7,7 +7,7 @@
 #include "complex.hpp"
 
 class MandelbrotGrid {
-  public:
+public:
     MandelbrotGrid();
 
     void initializeGrid(int width, int height, double viewCenterReal,
@@ -35,7 +35,7 @@ class MandelbrotGrid {
 
     void move(double real, double imag);
 
-  private:
+private:
     std::vector<Complex> grid;
     std::vector<int> m_iterationGrid;
 
