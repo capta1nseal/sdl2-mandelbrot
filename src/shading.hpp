@@ -6,6 +6,8 @@
 
 // Class for handling shading, in this case meaning:
 // Converts a scalar into RGB.
+// Does a bit of light functional programming so the shading function can easily
+// be switched between some options.
 class Shading {
 public:
     using Colour = std::tuple<int, int, int>;

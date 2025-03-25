@@ -49,62 +49,16 @@ Shading::Colour Shading::shadeGreyscaleInverse(double histogramFactor) {
 }
 
 Shading::Colour Shading::shadeHsv(double histogramFactor) {
-    histogramFactor = 1.0 - histogramFactor;
-    return hsvToRgb(histogramFactor * 720 + 300, 0.75 + histogramFactor / 4.0,
-                    1.0);
+    auto hsvColour = HsvColour{
+        (1.0 - histogramFactor) * 720 + 300,
+        0.75 + histogramFactor / 4.0,
+        1.0,
+    };
+    return hsvToRgb(hsvColour);
 }
 
 Shading::Colour Shading::shadeMidnightCherry(double histogramFactor) {
     return colourRamp(midnightCherryPath, histogramFactor);
-}
-
-Shading::Colour Shading::hsvToRgb(double hue, double saturation, double value) {
-    hue = fmodf64(hue, 360.0) / 60.0;
-    long i = static_cast<int>(hue);
-    double ff = hue - i;
-    double p = value * (1.0 - saturation);
-    double q = value * (1.0 - (saturation * ff));
-    double t = value * (1.0 - (saturation * (1.0 - ff)));
-
-    int r;
-    int g;
-    int b;
-
-    switch (i) {
-    case 0:
-        r = 255 * value;
-        g = 255 * t;
-        b = 255 * p;
-        break;
-    case 1:
-        r = 255 * q;
-        g = 255 * value;
-        b = 255 * p;
-        break;
-    case 2:
-        r = 255 * p;
-        g = 255 * value;
-        b = 255 * t;
-        break;
-    case 3:
-        r = 255 * p;
-        g = 255 * q;
-        b = 255 * value;
-        break;
-    case 4:
-        r = 255 * t;
-        g = 255 * p;
-        b = 255 * value;
-        break;
-    case 5:
-    default:
-        r = 255 * value;
-        g = 255 * p;
-        b = 255 * q;
-        break;
-    }
-
-    return {r, g, b};
 }
 
 Shading::Colour Shading::hsvToRgb(HsvColour hsvColour) {
