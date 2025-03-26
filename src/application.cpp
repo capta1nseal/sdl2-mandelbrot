@@ -170,6 +170,18 @@ void MandelbrotApplication::handleEvents() {
                 mandelbrotGrid.move(0.1, 0.0);
                 initializeRenderTexture();
                 break;
+            case SDL_SCANCODE_1:
+                shading.setShadingFunction(0);
+                break;
+            case SDL_SCANCODE_2:
+                shading.setShadingFunction(1);
+                break;
+            case SDL_SCANCODE_3:
+                shading.setShadingFunction(2);
+                break;
+            case SDL_SCANCODE_4:
+                shading.setShadingFunction(3);
+                break;
             default:
                 break;
             }

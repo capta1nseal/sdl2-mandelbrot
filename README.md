@@ -12,6 +12,7 @@ Just a little hobby project in fractal rendering.
 - zoom in/out with up/down arrow keys
 - zoom in and centre on click by left-clicking
     - resizing or zooming may result in needing to wait a moment until enough iterations are recalculated to be able to see anything
+- keys 1-4 select a shading function. works instantly and doesn't need any recalculations.
 
 #### status
 - draws mandelbrot set
@@ -21,8 +22,6 @@ Just a little hobby project in fractal rendering.
 - pretty slow. rendered on CPU
 
 ##### planned
-- render in colour using an HSV to RGB transform
-    - add a way to switch between colouring algorithms, using some functional or object-oriented programming to make it efficient
 - performance optimisation:
     - render with openGL shaders instead of CPU pixel manipulation
     - multithreading
