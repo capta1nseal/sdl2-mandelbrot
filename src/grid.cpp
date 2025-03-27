@@ -32,39 +32,41 @@ void MandelbrotGrid::initializeGrid(int width, int height,
 }
 
 void MandelbrotGrid::resizeGrid(int width, int height) {
-    {
-        std::lock_guard<std::mutex> lock(calculationMutex);
+    std::lock_guard<std::mutex> lock(calculationMutex);
 
-        m_width = width;
-        m_height = height;
+    m_width = width;
+    m_height = height;
 
-        aspectRatio =
-            static_cast<double>(m_width) / static_cast<double>(m_height);
-    }
+    aspectRatio = static_cast<double>(m_width) / static_cast<double>(m_height);
 
     resetGrid();
 }
 
 void MandelbrotGrid::resetGrid() {
-    std::lock_guard<std::mutex> lock(calculationMutex);
     invalidateCurrentIteration = true;
 
+    grid.clear();
     grid.resize(m_width * m_height);
     grid.assign(m_width * m_height, Complex(0.0, 0.0));
 
+    safe_magnitudeGrid.clear();
     safe_magnitudeGrid.resize(m_width * m_height);
     safe_magnitudeGrid.assign(m_width * m_height, 0.0);
 
+    m_iterationGrid.clear();
     m_iterationGrid.resize(m_width * m_height);
     m_iterationGrid.assign(m_width * m_height, 0);
 
+    safe_iterationGrid.clear();
     safe_iterationGrid.resize(m_width * m_height);
     safe_iterationGrid.assign(m_width * m_height, 0);
 
     m_escapeCount = 0;
     safe_escapeCount = 0;
+    escapeIterationCounter.clear();
     escapeIterationCounter.resize(m_iterationMaximum);
     escapeIterationCounter.assign(m_iterationMaximum, 0);
+    safe_escapeIterationCounterSums.clear();
     safe_escapeIterationCounterSums.resize(m_iterationMaximum);
     safe_escapeIterationCounterSums.resize(m_iterationMaximum, 0);
 
@@ -101,36 +103,28 @@ void MandelbrotGrid::getFrameData(
 }
 
 void MandelbrotGrid::zoomIn(double factor) {
-    {
-        std::lock_guard<std::mutex> lock(calculationMutex);
-        m_viewScale *= factor;
-    }
+    std::lock_guard<std::mutex> lock(calculationMutex);
+    m_viewScale *= factor;
     resetGrid();
     std::cout << m_viewScale << "\n";
 }
 void MandelbrotGrid::zoomOut(double factor) {
-    {
-        std::lock_guard<std::mutex> lock(calculationMutex);
-        m_viewScale /= factor;
-    }
+    std::lock_guard<std::mutex> lock(calculationMutex);
+    m_viewScale /= factor;
     resetGrid();
     std::cout << m_viewScale << "\n";
 }
 
 void MandelbrotGrid::zoomOnPixel(int x, int y) {
-    {
-        std::lock_guard<std::mutex> lock(calculationMutex);
-        m_viewCenter.set(mapToComplex(x, y));
-        m_viewScale *= 2;
-    }
+    std::lock_guard<std::mutex> lock(calculationMutex);
+    m_viewCenter.set(mapToComplex(x, y));
+    m_viewScale *= 2;
     resetGrid();
 }
 
 void MandelbrotGrid::move(double real, double imag) {
-    {
-        std::lock_guard<std::mutex> lock(calculationMutex);
-        m_viewCenter.add(Complex(real / m_viewScale, imag / m_viewScale));
-    }
+    std::lock_guard<std::mutex> lock(calculationMutex);
+    m_viewCenter.add(Complex(real / m_viewScale, imag / m_viewScale));
     resetGrid();
     std::cout << "(" << m_viewCenter.real << "," << m_viewCenter.imag << ")\n";
 }
