@@ -1,5 +1,6 @@
 #include "application.hpp"
 
+#include <SDL2/SDL_render.h>
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -110,6 +111,7 @@ void MandelbrotApplication::initializeShading() {
 }
 
 void MandelbrotApplication::initializeRenderTexture() {
+    SDL_DestroyTexture(renderTexture);
     renderTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
                                       SDL_TEXTUREACCESS_STREAMING, displayWidth,
                                       displayHeight);
