@@ -63,6 +63,10 @@ void MandelbrotApplication::initializeSdl() {
     displayWidth = displayMode.w / 2;
     displayHeight = displayMode.h / 2;
 
+    // Testing small window size, useful for valgrind.
+    // displayWidth = 160;
+    // displayHeight = 90;
+
     uint32_t windowFlags = SDL_WINDOW_RESIZABLE;
     window = SDL_CreateWindow("mandelbrot", SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED, displayWidth,
