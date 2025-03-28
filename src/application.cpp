@@ -89,9 +89,10 @@ void MandelbrotApplication::initializeGrid() {
     mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.0, 0.0, 1.0);
 
     // random test location
-    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.260224, -0.00184122, 2998.48);
+    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.260224,
+    // -0.00184122, 2998.48);
 
-    // takes you to a zoom in seahorse valley
+    // a zoom in seahorse valley
     // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -0.747089,
     // 0.100153, 955.594);
 
