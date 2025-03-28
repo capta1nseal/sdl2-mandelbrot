@@ -106,13 +106,13 @@ void MandelbrotGrid::zoomIn(double factor) {
     std::lock_guard<std::mutex> lock(calculationMutex);
     m_viewScale *= factor;
     resetGrid();
-    std::cout << m_viewScale << "\n";
+    printLocation();
 }
 void MandelbrotGrid::zoomOut(double factor) {
     std::lock_guard<std::mutex> lock(calculationMutex);
     m_viewScale /= factor;
     resetGrid();
-    std::cout << m_viewScale << "\n";
+    printLocation();
 }
 
 void MandelbrotGrid::zoomOnPixel(int x, int y) {
@@ -120,13 +120,19 @@ void MandelbrotGrid::zoomOnPixel(int x, int y) {
     m_viewCenter.set(mapToComplex(x, y));
     m_viewScale *= 2;
     resetGrid();
+    printLocation();
 }
 
 void MandelbrotGrid::move(double real, double imag) {
     std::lock_guard<std::mutex> lock(calculationMutex);
     m_viewCenter.add(Complex(real / m_viewScale, imag / m_viewScale));
     resetGrid();
-    std::cout << "(" << m_viewCenter.real << "," << m_viewCenter.imag << ")\n";
+    printLocation();
+}
+
+void MandelbrotGrid::printLocation() {
+    std::cout << "(" << m_viewCenter.real << ", " << m_viewCenter.imag << ", "
+              << m_viewScale << ")\n";
 }
 
 Complex MandelbrotGrid::mapToComplex(double x, double y) {

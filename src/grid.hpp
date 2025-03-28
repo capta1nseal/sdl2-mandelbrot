@@ -36,6 +36,8 @@ public:
 
     void move(double real, double imag);
 
+    void printLocation();
+
 private:
     std::vector<Complex> grid;
     std::vector<int> m_iterationGrid;

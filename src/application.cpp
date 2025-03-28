@@ -46,9 +46,6 @@ void MandelbrotApplication::run() {
 
         delta = now() - start;
 
-        if (frameCounter % static_cast<int>(10.0 / delta.count() + 0.0001) == 0)
-            std::cout << delta.count() << "\n";
-
         frameCounter += 1;
     }
 
