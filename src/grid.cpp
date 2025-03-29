@@ -47,6 +47,7 @@ void MandelbrotGrid::resizeGrid(int width, int height) {
 
 void MandelbrotGrid::resetGrid() {
     invalidateCurrentIteration = true;
+    workQueue.abortIteration();
 
     grid.clear();
     grid.resize(m_width * m_height);
@@ -167,7 +168,11 @@ void MandelbrotGrid::rowIterator(WorkQueue *workQueue) {
     auto [y, width] = workQueue->getTask();
 
     while (y != -1) {
+        // TODO use workQueue's atomic bool to abort before further reads.
         for (int x = 0; x < m_width; x++) {
+            if (workQueue->isAborted()) [[unlikely]] {
+                break;
+            }
             if (grid[x * m_height + y].magnitudeSquared() <=
                 (m_escapeRadius * m_escapeRadius)) {
                 grid[x * m_height + y].squareAdd(mapToComplex(x, y));
@@ -196,7 +201,6 @@ void MandelbrotGrid::iterateGrid() {
         }
 
         {
-            WorkQueue workQueue = WorkQueue();
             workQueue.setTaskCount(m_height);
             workQueue.setTaskLength(m_width);
 

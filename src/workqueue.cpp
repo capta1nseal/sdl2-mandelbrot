@@ -1,7 +1,7 @@
 #include "workqueue.hpp"
 #include <mutex>
 
-WorkQueue::WorkQueue() {}
+WorkQueue::WorkQueue() { abort = false; }
 WorkQueue::~WorkQueue() {}
 
 void WorkQueue::setTaskCount(unsigned int count) {
@@ -9,6 +9,7 @@ void WorkQueue::setTaskCount(unsigned int count) {
 
     taskCount = count;
     nextTask = 0;
+    abort = false;
 }
 void WorkQueue::setTaskLength(unsigned int length) {
     std::lock_guard<std::mutex> lock(accessMutex);
@@ -31,3 +32,6 @@ std::tuple<int, unsigned int> WorkQueue::getTask() {
 
     return {task, taskLength};
 }
+
+void WorkQueue::abortIteration() { abort = true; }
+bool WorkQueue::isAborted() const { return abort; }

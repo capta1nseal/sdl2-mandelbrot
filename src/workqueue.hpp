@@ -1,6 +1,7 @@
 #ifndef _MANDELBROTWORKQUEUE_
 #define _MANDELBROTWORKQUEUE_
 
+#include <atomic>
 #include <mutex>
 #include <tuple>
 
@@ -19,10 +20,17 @@ public:
     // If there are no tasks, returns -1.
     std::tuple<int, unsigned int> getTask();
 
+    // Abort current iteration.
+    void abortIteration();
+    // Check if current iteration is aborted.
+    bool isAborted() const;
+
 private:
     unsigned int nextTask;
     unsigned int taskCount;
     unsigned int taskLength;
+
+    std::atomic_bool abort;
 
     // Just one mutex and lock_guards for thread safety.
     std::mutex accessMutex;

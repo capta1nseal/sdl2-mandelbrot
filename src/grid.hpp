@@ -61,6 +61,7 @@ private:
     double m_viewScale;
 
     bool isRunning;
+    WorkQueue workQueue;
     std::mutex calculationMutex;
     bool invalidateCurrentIteration;
 
