@@ -14,8 +14,8 @@ Shading::Shading() {
     }
 }
 
-Shading::Colour Shading::shade(double histogramFactor) {
-    return (this->*shadingFunction)(histogramFactor);
+Shading::Colour Shading::shade(double histogramFactor, double timeCounter) {
+    return (this->*shadingFunction)(histogramFactor, timeCounter);
 }
 
 void Shading::setShadingFunction(int functionNumber) {
@@ -38,26 +38,29 @@ void Shading::setShadingFunction(int functionNumber) {
     }
 }
 
-Shading::Colour Shading::shadeGreyscale(double histogramFactor) {
-    return shadeGreyscaleInverse(1.0 - histogramFactor);
+Shading::Colour Shading::shadeGreyscale(double histogramFactor,
+                                        double timeCounter) {
+    return shadeGreyscaleInverse(1.0 - histogramFactor, timeCounter);
 }
 
-Shading::Colour Shading::shadeGreyscaleInverse(double histogramFactor) {
+Shading::Colour Shading::shadeGreyscaleInverse(double histogramFactor,
+                                               double timeCounter) {
     int alpha = histogramFactor * 255;
 
     return {alpha, alpha, alpha};
 }
 
-Shading::Colour Shading::shadeHsv(double histogramFactor) {
+Shading::Colour Shading::shadeHsv(double histogramFactor, double timeCounter) {
     auto hsvColour = HsvColour{
-        (1.0 - histogramFactor) * 720 + 300,
-        0.75 + histogramFactor / 4.0,
+        (1.0 - histogramFactor) * 720 + timeCounter * 90,
+        0.75 + histogramFactor / 0.25,
         1.0,
     };
     return hsvToRgb(hsvColour);
 }
 
-Shading::Colour Shading::shadeMidnightCherry(double histogramFactor) {
+Shading::Colour Shading::shadeMidnightCherry(double histogramFactor,
+                                             double timeCounter) {
     return colourRamp(midnightCherryPath, histogramFactor);
 }
 

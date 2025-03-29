@@ -20,15 +20,16 @@ MandelbrotApplication::MandelbrotApplication() {
     initializeShading();
 
     isRunning = false;
+    frameCounter = 0;
+    timeCounter = 0.0;
     isFullscreen = false;
 }
 
 void MandelbrotApplication::run() {
     auto start = now();
+    auto frameStart = start;
 
     std::chrono::duration<double> delta;
-
-    int frameCounter = 0;
 
     calculationThread =
         std::thread(&MandelbrotGrid::calculationLoop, &mandelbrotGrid);
@@ -37,13 +38,14 @@ void MandelbrotApplication::run() {
     draw();
 
     while (isRunning) {
-        start = now();
+        frameStart = now();
 
         handleEvents();
 
+        timeCounter = (now() - start).count() * 0.000000001;
         draw();
 
-        delta = now() - start;
+        delta = now() - frameStart;
 
         frameCounter += 1;
     }
@@ -243,7 +245,7 @@ void MandelbrotApplication::draw() {
     double histogramFactor;
     Shading::Colour colour;
 
-    colour = shading.shade(1.0);
+    colour = shading.shade(1.0, timeCounter);
     SDL_SetRenderDrawColor(renderer, get<0>(colour), get<1>(colour),
                            get<2>(colour), 255);
     SDL_RenderClear(renderer);
@@ -263,7 +265,7 @@ void MandelbrotApplication::draw() {
                                       escapeIterationCount - 1.0) /
                                   static_cast<double>(escapeCount);
 
-                colour = shading.shade(histogramFactor);
+                colour = shading.shade(histogramFactor, timeCounter);
 
                 texturePixels[y * texturePitch + x * 4] =
                     static_cast<unsigned char>(get<2>(colour));
