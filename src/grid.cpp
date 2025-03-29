@@ -1,14 +1,17 @@
 #include "grid.hpp"
 
-#include "complex.hpp"
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <mutex>
+#include <thread>
 #include <vector>
+
+#include "complex.hpp"
+#include "workqueue.hpp"
 
 MandelbrotGrid::MandelbrotGrid() {
     m_iterationCount = 0;
-    safe_iterationCount = 0;
     m_iterationMaximum = 4096;
     m_escapeRadius = 2.0;
     m_width = 1;
@@ -43,35 +46,21 @@ void MandelbrotGrid::resizeGrid(int width, int height) {
 }
 
 void MandelbrotGrid::resetGrid() {
-    invalidateCurrentIteration = true;
+    workQueue.abortIteration();
 
-    grid.clear();
     grid.resize(m_width * m_height);
     grid.assign(m_width * m_height, Complex(0.0, 0.0));
 
-    safe_magnitudeGrid.clear();
-    safe_magnitudeGrid.resize(m_width * m_height);
     safe_magnitudeGrid.assign(m_width * m_height, 0.0);
 
-    m_iterationGrid.clear();
     m_iterationGrid.resize(m_width * m_height);
     m_iterationGrid.assign(m_width * m_height, 0);
 
-    safe_iterationGrid.clear();
-    safe_iterationGrid.resize(m_width * m_height);
-    safe_iterationGrid.assign(m_width * m_height, 0);
-
     m_escapeCount = 0;
-    safe_escapeCount = 0;
-    escapeIterationCounter.clear();
     escapeIterationCounter.resize(m_iterationMaximum);
     escapeIterationCounter.assign(m_iterationMaximum, 0);
-    safe_escapeIterationCounterSums.clear();
-    safe_escapeIterationCounterSums.resize(m_iterationMaximum);
-    safe_escapeIterationCounterSums.resize(m_iterationMaximum, 0);
 
     m_iterationCount = 0;
-    safe_iterationCount = 0;
 }
 
 void MandelbrotGrid::calculationLoop() {
@@ -89,17 +78,40 @@ void MandelbrotGrid::getFrameData(
     int &iterationCount, int &escapeCount, std::vector<double> &magnitudeGrid,
     std::vector<int> &iterationGrid,
     std::vector<int> &escapeIterationCounterSums) {
-    std::lock_guard<std::mutex> lock(calculationMutex);
 
-    iterationCount = safe_iterationCount;
+    while (m_iterationCount == 0) [[unlikely]] {
+    }
 
-    escapeCount = safe_escapeCount;
+    // Loop to keep acquiring mutex until it is acquired after the completion of
+    // a non-aborted iteration.
+    bool done = false;
+    while (!done) {
+        std::lock_guard<std::mutex> lock(calculationMutex);
 
-    magnitudeGrid = safe_magnitudeGrid;
+        if (!workQueue.isAborted()) [[likely]] {
 
-    iterationGrid = safe_iterationGrid;
+            iterationCount = m_iterationCount;
 
-    escapeIterationCounterSums = safe_escapeIterationCounterSums;
+            escapeCount = m_escapeCount;
+
+            magnitudeGrid.resize(m_width * m_height);
+            for (int i = 0; i < m_width * m_height; i++) {
+                magnitudeGrid[i] = grid[i].magnitude();
+            }
+
+            iterationGrid = m_iterationGrid;
+
+            escapeIterationCounterSums.resize(m_iterationMaximum);
+            escapeIterationCounterSums[0] = escapeIterationCounter[0];
+            for (int i = 1; i < m_iterationMaximum; i++) {
+                escapeIterationCounterSums[i] =
+                    escapeIterationCounterSums[i - 1] +
+                    escapeIterationCounter[i];
+            }
+
+            done = true;
+        }
+    }
 }
 
 void MandelbrotGrid::zoomIn(double factor) {
@@ -160,57 +172,57 @@ void MandelbrotGrid::incrementIterationGrid(int x, int y) {
     m_iterationGrid[x * m_height + y] += 1;
 }
 
-void MandelbrotGrid::iterateGrid() {
+void MandelbrotGrid::rowIterator() {
+    auto [y, width] = workQueue.getTask();
 
-    if (m_iterationCount < m_iterationMaximum) {
-        {
-            std::lock_guard<std::mutex> lock(calculationMutex);
-
-            invalidateCurrentIteration = false;
-        }
+    while (y != -1) {
+        // TODO use workQueue's atomic bool to abort before further reads.
         for (int x = 0; x < m_width; x++) {
-            for (int y = 0; y < m_height; y++) {
-                if (grid[x * m_height + y].magnitudeSquared() <=
-                    (m_escapeRadius * m_escapeRadius)) {
-                    grid[x * m_height + y].squareAdd(mapToComplex(x, y));
-                    incrementIterationGrid(x, y);
+            if (workQueue.isAborted()) [[unlikely]] {
+                break;
+            }
+            if (grid[x * m_height + y].magnitudeSquared() <=
+                (m_escapeRadius * m_escapeRadius)) {
+                grid[x * m_height + y].squareAdd(mapToComplex(x, y));
+                incrementIterationGrid(x, y);
 
-                    if (grid[x * m_height + y].magnitudeSquared() >
-                        (m_escapeRadius * m_escapeRadius)) {
-                        m_escapeCount++;
-                        escapeIterationCounter
-                            [m_iterationGrid[x * m_height + y] - 1]++;
-                    }
+                if (grid[x * m_height + y].magnitudeSquared() >
+                    (m_escapeRadius * m_escapeRadius)) {
+                    m_escapeCount++;
+                    escapeIterationCounter[m_iterationGrid[x * m_height + y] -
+                                           1]++;
                 }
             }
-            if (invalidateCurrentIteration)
-                break;
         }
 
-        if (not invalidateCurrentIteration) { // update data once full iteration
-                                              // has been processed to be
-                                              // accessed by renderer
-            std::lock_guard<std::mutex> lock(calculationMutex);
+        std::tie(y, width) = workQueue.getTask();
+    }
+}
 
-            safe_escapeCount = m_escapeCount;
+void MandelbrotGrid::iterateGrid() {
+    if (m_iterationCount < m_iterationMaximum) {
+        std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+        std::lock_guard<std::mutex> lock(calculationMutex);
 
-            for (int i = 0; i < m_width * m_height; i++) {
-                safe_magnitudeGrid[i] = grid[i].magnitude();
-                safe_iterationGrid[i] = m_iterationGrid[i];
+        workQueue.setTaskCount(m_height);
+        workQueue.setTaskLength(m_width);
+
+        unsigned int threadCount = std::thread::hardware_concurrency();
+        std::vector<std::jthread> threads;
+
+        {
+            for (unsigned int i = 0u; i < threadCount; i++) {
+                threads.push_back(
+                    std::jthread(&MandelbrotGrid::rowIterator, this));
             }
+        }
 
-            safe_escapeIterationCounterSums[0] = escapeIterationCounter[0];
-            for (int i = 1; i < m_iterationMaximum; i++) {
-                safe_escapeIterationCounterSums[i] =
-                    safe_escapeIterationCounterSums[i - 1] +
-                    escapeIterationCounter[i];
-            }
+        if (!workQueue.isAborted()) {
             m_iterationCount++;
-            safe_iterationCount++;
-        }
 
-        if (m_iterationCount >= m_iterationMaximum) {
-            std::cout << "max iteration count reached\n";
+            if (m_iterationCount >= m_iterationMaximum) {
+                std::cout << "max iteration count reached\n";
+            }
         }
     }
 }
