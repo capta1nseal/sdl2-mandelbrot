@@ -44,15 +44,11 @@ private:
     std::vector<int> m_iterationGrid;
 
     std::vector<double> safe_magnitudeGrid;
-    std::vector<int> safe_iterationGrid;
 
     std::vector<int> escapeIterationCounter;
-    std::vector<int> safe_escapeIterationCounterSums;
 
-    int m_escapeCount;
-    int safe_escapeCount;
-    int m_iterationCount;
-    int safe_iterationCount;
+    std::atomic_int m_escapeCount;
+    std::atomic_int m_iterationCount;
     int m_iterationMaximum;
     double m_escapeRadius;
     int m_width, m_height;
@@ -63,7 +59,6 @@ private:
     bool isRunning;
     WorkQueue workQueue;
     std::mutex calculationMutex;
-    bool invalidateCurrentIteration;
 
     Complex mapToComplex(double x, double y);
 
@@ -72,7 +67,7 @@ private:
     void incrementIterationGrid(int x, int y);
 
     // Iterates over one row of the grid, intended for use in multithreading.
-    void rowIterator(WorkQueue *workqueue);
+    void rowIterator();
 
     void iterateGrid();
 };

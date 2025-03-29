@@ -23,7 +23,7 @@ public:
     // Abort current iteration.
     void abortIteration();
     // Check if current iteration is aborted.
-    bool isAborted() const;
+    const std::atomic_bool &isAborted() const;
 
 private:
     unsigned int nextTask;

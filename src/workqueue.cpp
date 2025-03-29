@@ -1,7 +1,7 @@
 #include "workqueue.hpp"
 #include <mutex>
 
-WorkQueue::WorkQueue() { abort = false; }
+WorkQueue::WorkQueue() { abort = true; }
 WorkQueue::~WorkQueue() {}
 
 void WorkQueue::setTaskCount(unsigned int count) {
@@ -28,10 +28,9 @@ std::tuple<int, unsigned int> WorkQueue::getTask() {
             task = nextTask;
             nextTask++;
         }
+        return {task, taskLength};
     }
-
-    return {task, taskLength};
 }
 
 void WorkQueue::abortIteration() { abort = true; }
-bool WorkQueue::isAborted() const { return abort; }
+const std::atomic_bool &WorkQueue::isAborted() const { return abort; }
