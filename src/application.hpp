@@ -21,6 +21,8 @@ public:
 
 private:
     bool isRunning;
+    int frameCounter;
+    double timeCounter;
     unsigned int displayWidth, displayHeight;
     bool isFullscreen;
 
