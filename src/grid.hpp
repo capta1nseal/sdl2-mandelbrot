@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "complex.hpp"
+#include "workqueue.hpp"
 
 // Wrapper for data and number crunching for the fractal solver.
 class MandelbrotGrid {
@@ -68,6 +69,9 @@ private:
     void setValueAt(int x, int y, Complex value);
 
     void incrementIterationGrid(int x, int y);
+
+    // Iterates over one row of the grid, intended for use in multithreading.
+    void rowIterator(WorkQueue *workqueue);
 
     void iterateGrid();
 };

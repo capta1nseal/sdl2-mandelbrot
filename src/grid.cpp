@@ -1,10 +1,13 @@
 #include "grid.hpp"
 
-#include "complex.hpp"
 #include <cmath>
 #include <iostream>
 #include <mutex>
+#include <thread>
 #include <vector>
+
+#include "complex.hpp"
+#include "workqueue.hpp"
 
 MandelbrotGrid::MandelbrotGrid() {
     m_iterationCount = 0;
@@ -160,6 +163,29 @@ void MandelbrotGrid::incrementIterationGrid(int x, int y) {
     m_iterationGrid[x * m_height + y] += 1;
 }
 
+void MandelbrotGrid::rowIterator(WorkQueue *workQueue) {
+    auto [y, width] = workQueue->getTask();
+
+    while (y != -1) {
+        for (int x = 0; x < m_width; x++) {
+            if (grid[x * m_height + y].magnitudeSquared() <=
+                (m_escapeRadius * m_escapeRadius)) {
+                grid[x * m_height + y].squareAdd(mapToComplex(x, y));
+                incrementIterationGrid(x, y);
+
+                if (grid[x * m_height + y].magnitudeSquared() >
+                    (m_escapeRadius * m_escapeRadius)) {
+                    m_escapeCount++;
+                    escapeIterationCounter[m_iterationGrid[x * m_height + y] -
+                                           1]++;
+                }
+            }
+        }
+
+        std::tie(y, width) = workQueue->getTask();
+    }
+}
+
 void MandelbrotGrid::iterateGrid() {
 
     if (m_iterationCount < m_iterationMaximum) {
@@ -168,23 +194,20 @@ void MandelbrotGrid::iterateGrid() {
 
             invalidateCurrentIteration = false;
         }
-        for (int x = 0; x < m_width; x++) {
-            for (int y = 0; y < m_height; y++) {
-                if (grid[x * m_height + y].magnitudeSquared() <=
-                    (m_escapeRadius * m_escapeRadius)) {
-                    grid[x * m_height + y].squareAdd(mapToComplex(x, y));
-                    incrementIterationGrid(x, y);
 
-                    if (grid[x * m_height + y].magnitudeSquared() >
-                        (m_escapeRadius * m_escapeRadius)) {
-                        m_escapeCount++;
-                        escapeIterationCounter
-                            [m_iterationGrid[x * m_height + y] - 1]++;
-                    }
-                }
+        {
+            WorkQueue workQueue = WorkQueue();
+            workQueue.setTaskCount(m_height);
+            workQueue.setTaskLength(m_width);
+
+            std::vector<std::jthread> threads;
+
+            unsigned int threadCount = std::thread::hardware_concurrency() - 1;
+
+            for (unsigned int i = 0u; i < threadCount; i++) {
+                threads.push_back(std::jthread(&MandelbrotGrid::rowIterator,
+                                               this, &workQueue));
             }
-            if (invalidateCurrentIteration)
-                break;
         }
 
         if (not invalidateCurrentIteration) { // update data once full iteration
