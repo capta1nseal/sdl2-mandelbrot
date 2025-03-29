@@ -104,6 +104,7 @@ void MandelbrotApplication::initializeGrid() {
     // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -0.190564,
     // 0.668407, 38294.6);
 
+    // tendrils
     // mandelbrotGrid.initializeGrid(displayWidth, displayHeight,
     // -0.101095431622, 0.956257978001, 90647547890);
 
