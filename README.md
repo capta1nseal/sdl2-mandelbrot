@@ -1,30 +1,29 @@
-# SDL2 mandelbrot
+# mandelbrot
 Just a little hobby project in fractal rendering.
+Rendered on the CPU. A long-term goal would be to move compute to the GPU.
 
-## installation
-- Requires an installation of SDL2 on your include path, or provide your own and link in Makefile.
+## Installation
+- Requires an installation of SDL3 on your include path, or provide your own and link in Makefile.
 - Run `make` from project root to build the project, `make test` to build and instantly run. The flag `-j<n>` can be used to set the number of threads to use for the build, where `<n>` is the number of threads.
 
-### usage
-- run the executable
-- window can be resized, toggle fullscreen with F11
-- move around with WASD keys
-- zoom in/out with up/down arrow keys
-- zoom in and centre on click by left-clicking
-    - resizing or zooming may result in needing to wait a moment until enough iterations are recalculated to be able to see anything
-- keys 1-4 select a shading function. works instantly and doesn't need any recalculations.
+### Usage
+- Run the executable.
+- Window can be resized, toggle fullscreen with F11.
+- Move around with WASD keys.
+- Zoom in/out with up/down arrow keys.
+- Zoom in and centre on click by left-clicking.
+    - Resizing or zooming may result in needing to wait a moment until enough iterations are recalculated to be able to see anything.
+- Keys 1-4 select a shading function. works instantly and doesn't need any recalculations.
 
-#### status
-- draws mandelbrot set
-- greyscale colouring with smooth histogram shading
-- iteration count is incremented per frame
-- basic navigation implemented
-- pretty slow. rendered on CPU
+#### Status
+- Draws mandelbrot set.
+- Configurable shading with smooth colouring.
+- Navigation with keyboard and mouse.
+- A bit slow since it's rendered on CPU.
 
-##### planned
-- performance optimisation:
-    - render with openGL shaders instead of CPU pixel manipulation
-    - multithreading
-- smooth user experience
-    - speed up rendering enough (maybe add initial low-quality pass(es)) to make navigation feel snappy
+##### Planned
+- Performance optimisation:
+    - Render with openGL shaders on the GPU instead of CPU pixel manipulation.
+- Smooth user experience:
+    - Initial low-quality passes for snappy navigation.
     - GUI for changing between colouring algorithms, zooming, etc.

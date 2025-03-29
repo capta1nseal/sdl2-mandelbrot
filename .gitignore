@@ -3,3 +3,8 @@
 
 # build files
 bin/
+
+# flamegraph stuff
+flamegraph.svg
+perf.data
+perf.data.old

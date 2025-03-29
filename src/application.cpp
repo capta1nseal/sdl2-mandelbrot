@@ -1,11 +1,17 @@
 #include "application.hpp"
 
-#include <SDL2/SDL_render.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_video.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_video.h>
 #include <chrono>
 #include <cmath>
 #include <thread>
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "grid.hpp"
 #include "shading.hpp"
@@ -20,15 +26,16 @@ MandelbrotApplication::MandelbrotApplication() {
     initializeShading();
 
     isRunning = false;
+    frameCounter = 0;
+    timeCounter = 0.0;
     isFullscreen = false;
 }
 
 void MandelbrotApplication::run() {
     auto start = now();
+    auto frameStart = start;
 
     std::chrono::duration<double> delta;
-
-    int frameCounter = 0;
 
     calculationThread =
         std::thread(&MandelbrotGrid::calculationLoop, &mandelbrotGrid);
@@ -37,13 +44,14 @@ void MandelbrotApplication::run() {
     draw();
 
     while (isRunning) {
-        start = now();
+        frameStart = now();
 
         handleEvents();
 
+        timeCounter = (now() - start).count() * 0.000000001;
         draw();
 
-        delta = now() - start;
+        delta = now() - frameStart;
 
         frameCounter += 1;
     }
@@ -56,24 +64,28 @@ void MandelbrotApplication::run() {
 }
 
 void MandelbrotApplication::initializeSdl() {
-    SDL_Init(SDL_INIT_EVERYTHING);
+    SDL_InitSubSystem(SDL_INIT_VIDEO);
 
-    SDL_GetCurrentDisplayMode(0, &displayMode);
+    SDL_GetGlobalMouseState(&mousePosition.x, &mousePosition.y);
+    auto mousePositionInt = SDL_Point();
+    mousePositionInt.x = mousePosition.x;
+    mousePositionInt.y = mousePosition.y;
+    auto displayID = SDL_GetDisplayForPoint(&mousePositionInt);
 
-    displayWidth = displayMode.w / 2;
-    displayHeight = displayMode.h / 2;
+    auto displayBounds = SDL_Rect();
+    SDL_GetDisplayBounds(displayID, &displayBounds);
+    displayWidth = displayBounds.w / 2;
+    displayHeight = displayBounds.h / 2;
 
     // Testing small window size, useful for valgrind.
     // displayWidth = 160;
     // displayHeight = 90;
 
     uint32_t windowFlags = SDL_WINDOW_RESIZABLE;
-    window = SDL_CreateWindow("mandelbrot", SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, displayWidth,
-                              displayHeight, windowFlags);
+    window = SDL_CreateWindow("mandelbrot", displayWidth, displayHeight,
+                              windowFlags);
 
-    uint32_t renderFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
-    renderer = SDL_CreateRenderer(window, -1, renderFlags);
+    renderer = SDL_CreateRenderer(window, NULL);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     keyboardState = SDL_GetKeyboardState(NULL);
@@ -87,6 +99,14 @@ void MandelbrotApplication::destroySdl() {
 
 void MandelbrotApplication::initializeGrid() {
     mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.0, 0.0, 1.0);
+
+    // nice spiral
+    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -0.190564,
+    // 0.668407, 38294.6);
+
+    // tendrils
+    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight,
+    // -0.101095431622, 0.956257978001, 90647547890);
 
     // random test location
     // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.260224,
@@ -108,7 +128,7 @@ void MandelbrotApplication::initializeGrid() {
 }
 
 void MandelbrotApplication::initializeShading() {
-    shading.setShadingFunction(3);
+    shading.setShadingFunction(2);
 }
 
 void MandelbrotApplication::initializeRenderTexture() {
@@ -125,21 +145,19 @@ void MandelbrotApplication::handleEvents() {
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             isRunning = false;
             break;
-        case SDL_WINDOWEVENT:
-            if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-                displayWidth = event.window.data1;
-                displayHeight = event.window.data2;
+        case SDL_EVENT_WINDOW_RESIZED:
+            displayWidth = event.window.data1;
+            displayHeight = event.window.data2;
 
-                mandelbrotGrid.resizeGrid(displayWidth, displayHeight);
+            mandelbrotGrid.resizeGrid(displayWidth, displayHeight);
 
-                initializeRenderTexture();
-            }
+            initializeRenderTexture();
             break;
-        case SDL_KEYDOWN:
-            switch (event.key.keysym.scancode) {
+        case SDL_EVENT_KEY_DOWN:
+            switch (event.key.scancode) {
             case SDL_SCANCODE_ESCAPE:
                 isRunning = false;
                 break;
@@ -147,8 +165,7 @@ void MandelbrotApplication::handleEvents() {
                 if (isFullscreen) {
                     SDL_SetWindowFullscreen(window, 0);
                 } else {
-                    SDL_SetWindowFullscreen(window,
-                                            SDL_WINDOW_FULLSCREEN_DESKTOP);
+                    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
                 }
                 isFullscreen = !isFullscreen;
                 break;
@@ -192,7 +209,7 @@ void MandelbrotApplication::handleEvents() {
                 break;
             }
             break;
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             switch (event.button.button) {
             case SDL_BUTTON_LEFT: {
                 mandelbrotGrid.zoomOnPixel(event.button.x, event.button.y);
@@ -212,12 +229,13 @@ void MandelbrotApplication::handleEvents() {
 void MandelbrotApplication::draw() {
     int iterationCount;
     int escapeCount;
-    std::vector<double> magnitudeGrid;
+    std::vector<double> magnitudeSquaredGrid;
     std::vector<int> iterationGrid;
     std::vector<int> escapeIterationCounterSums;
 
-    mandelbrotGrid.getFrameData(iterationCount, escapeCount, magnitudeGrid,
-                                iterationGrid, escapeIterationCounterSums);
+    mandelbrotGrid.getFrameData(iterationCount, escapeCount,
+                                magnitudeSquaredGrid, iterationGrid,
+                                escapeIterationCounterSums);
 
     auto smoothEscapeIterationCounterSum =
         [escapeIterationCounterSums](
@@ -243,7 +261,7 @@ void MandelbrotApplication::draw() {
     double histogramFactor;
     Shading::Colour colour;
 
-    colour = shading.shade(1.0);
+    colour = shading.shade(1.0, timeCounter);
     SDL_SetRenderDrawColor(renderer, get<0>(colour), get<1>(colour),
                            get<2>(colour), 255);
     SDL_RenderClear(renderer);
@@ -253,17 +271,18 @@ void MandelbrotApplication::draw() {
 
     for (unsigned int x = 0; x < displayWidth; x++) {
         for (unsigned int y = 0; y < displayHeight; y++) {
-            if (magnitudeGrid[x * displayHeight + y] > 2.0) {
+            if (magnitudeSquaredGrid[x * displayHeight + y] > 2.0 * 2.0) {
                 // calculate continuous number of iterations to escape
                 escapeIterationCount =
                     (iterationGrid[x * displayHeight + y] -
-                     log2(log2(magnitudeGrid[x * displayHeight + y])));
+                     log2(log2(magnitudeSquaredGrid[x * displayHeight + y]))) +
+                    1;
                 // get Lerped summed histogram for continuous histogram shading
                 histogramFactor = smoothEscapeIterationCounterSum(
                                       escapeIterationCount - 1.0) /
                                   static_cast<double>(escapeCount);
 
-                colour = shading.shade(histogramFactor);
+                colour = shading.shade(histogramFactor, timeCounter);
 
                 texturePixels[y * texturePitch + x * 4] =
                     static_cast<unsigned char>(get<2>(colour));
@@ -281,7 +300,7 @@ void MandelbrotApplication::draw() {
 
     SDL_SetTextureBlendMode(renderTexture, SDL_BLENDMODE_BLEND);
 
-    SDL_RenderCopy(renderer, renderTexture, NULL, NULL);
+    SDL_RenderTexture(renderer, renderTexture, NULL, NULL);
 
     SDL_RenderPresent(renderer);
 }
