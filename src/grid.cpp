@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <mutex>
 #include <thread>
@@ -12,7 +13,7 @@
 
 MandelbrotGrid::MandelbrotGrid() {
     m_iterationCount = 0;
-    m_iterationMaximum = 4096;
+    m_iterationMaximum = 8192;
     m_escapeRadius = 2.0;
     m_width = 1;
     m_height = 1;
@@ -141,6 +142,7 @@ void MandelbrotGrid::move(double real, double imag) {
 }
 
 void MandelbrotGrid::printLocation() {
+    std::cout << std::setprecision(12);
     std::cout << "(" << m_viewCenter.real << ", " << m_viewCenter.imag << ", "
               << m_viewScale << ")\n";
 }

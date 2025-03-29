@@ -66,7 +66,7 @@ void MandelbrotApplication::run() {
 void MandelbrotApplication::initializeSdl() {
     SDL_InitSubSystem(SDL_INIT_VIDEO);
 
-    SDL_GetMouseState(&mousePosition.x, &mousePosition.y);
+    SDL_GetGlobalMouseState(&mousePosition.x, &mousePosition.y);
     auto mousePositionInt = SDL_Point();
     mousePositionInt.x = mousePosition.x;
     mousePositionInt.y = mousePosition.y;
@@ -103,6 +103,9 @@ void MandelbrotApplication::initializeGrid() {
     // nice spiral
     // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -0.190564,
     // 0.668407, 38294.6);
+
+    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight,
+    // -0.101095431622, 0.956257978001, 90647547890);
 
     // random test location
     // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.260224,
