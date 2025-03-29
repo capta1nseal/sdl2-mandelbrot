@@ -1,5 +1,6 @@
-# SDL3 mandelbrot
+# mandelbrot
 Just a little hobby project in fractal rendering.
+Rendered on the CPU. A long-term goal would be to move compute to the GPU.
 
 ## installation
 - Requires an installation of SDL3 on your include path, or provide your own and link in Makefile.

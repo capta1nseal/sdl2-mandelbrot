@@ -2,7 +2,7 @@ SRCDIR  = src
 BINDIR  = bin
 OBJDIR := $(BINDIR)/obj
 DEPDIR := $(BINDIR)/dep
-TARGET  = sdl3-mandelbrot
+TARGET  = mandelbrot
 
 SRCS := $(shell find $(SRCDIR) -name "*.cpp")
 OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
