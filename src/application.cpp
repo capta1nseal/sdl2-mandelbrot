@@ -214,12 +214,13 @@ void MandelbrotApplication::handleEvents() {
 void MandelbrotApplication::draw() {
     int iterationCount;
     int escapeCount;
-    std::vector<double> magnitudeGrid;
+    std::vector<double> magnitudeSquaredGrid;
     std::vector<int> iterationGrid;
     std::vector<int> escapeIterationCounterSums;
 
-    mandelbrotGrid.getFrameData(iterationCount, escapeCount, magnitudeGrid,
-                                iterationGrid, escapeIterationCounterSums);
+    mandelbrotGrid.getFrameData(iterationCount, escapeCount,
+                                magnitudeSquaredGrid, iterationGrid,
+                                escapeIterationCounterSums);
 
     auto smoothEscapeIterationCounterSum =
         [escapeIterationCounterSums](
@@ -255,11 +256,12 @@ void MandelbrotApplication::draw() {
 
     for (unsigned int x = 0; x < displayWidth; x++) {
         for (unsigned int y = 0; y < displayHeight; y++) {
-            if (magnitudeGrid[x * displayHeight + y] > 2.0) {
+            if (magnitudeSquaredGrid[x * displayHeight + y] > 2.0 * 2.0) {
                 // calculate continuous number of iterations to escape
                 escapeIterationCount =
                     (iterationGrid[x * displayHeight + y] -
-                     log2(log2(magnitudeGrid[x * displayHeight + y])));
+                     log2(2 *
+                          log2(magnitudeSquaredGrid[x * displayHeight + y])));
                 // get Lerped summed histogram for continuous histogram shading
                 histogramFactor = smoothEscapeIterationCounterSum(
                                       escapeIterationCount - 1.0) /

@@ -43,7 +43,7 @@ private:
     std::vector<Complex> m_grid;
     std::vector<int> m_iterationGrid;
 
-    std::vector<double> m_magnitudeGrid;
+    std::vector<double> m_magnitudeSquaredGrid;
 
     std::vector<int> escapeIterationCounter;
 

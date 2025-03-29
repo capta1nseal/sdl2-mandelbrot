@@ -54,8 +54,8 @@ void MandelbrotGrid::resetGrid() {
     m_iterationGrid.resize(m_width * m_height);
     m_iterationGrid.assign(m_width * m_height, 0);
 
-    m_magnitudeGrid.resize(m_width * m_height);
-    m_magnitudeGrid.assign(m_width * m_height, 0.0);
+    m_magnitudeSquaredGrid.resize(m_width * m_height);
+    m_magnitudeSquaredGrid.assign(m_width * m_height, 0.0);
 
     m_escapeCount = 0;
     escapeIterationCounter.resize(m_iterationMaximum);
@@ -76,8 +76,8 @@ void MandelbrotGrid::stop() { isRunning = false; }
 int MandelbrotGrid::getMaxIterationCount() { return m_iterationMaximum; }
 
 void MandelbrotGrid::getFrameData(
-    int &iterationCount, int &escapeCount, std::vector<double> &magnitudeGrid,
-    std::vector<int> &iterationGrid,
+    int &iterationCount, int &escapeCount,
+    std::vector<double> &magnitudeSquaredGrid, std::vector<int> &iterationGrid,
     std::vector<int> &escapeIterationCounterSums) {
 
     while (m_iterationCount == 0) [[unlikely]] {
@@ -95,7 +95,7 @@ void MandelbrotGrid::getFrameData(
 
             escapeCount = m_escapeCount;
 
-            magnitudeGrid = m_magnitudeGrid;
+            magnitudeSquaredGrid = m_magnitudeSquaredGrid;
 
             iterationGrid = m_iterationGrid;
 
@@ -179,13 +179,15 @@ void MandelbrotGrid::rowIterator() {
             if (workQueue.isAborted()) [[unlikely]] {
                 break;
             }
-            if (m_magnitudeGrid[x * m_height + y] <= m_escapeRadius) {
+            if (m_magnitudeSquaredGrid[x * m_height + y] <=
+                m_escapeRadius * m_escapeRadius) {
                 m_grid[x * m_height + y].squareAdd(mapToComplex(x, y));
-                m_magnitudeGrid[x * m_height + y] =
-                    m_grid[x * m_height + y].magnitude();
+                m_magnitudeSquaredGrid[x * m_height + y] =
+                    m_grid[x * m_height + y].magnitudeSquared();
                 incrementIterationGrid(x, y);
 
-                if (m_magnitudeGrid[x * m_height + y] > m_escapeRadius) {
+                if (m_magnitudeSquaredGrid[x * m_height + y] >
+                    m_escapeRadius * m_escapeRadius) {
                     m_escapeCount++;
                     escapeIterationCounter[m_iterationGrid[x * m_height + y] -
                                            1]++;
