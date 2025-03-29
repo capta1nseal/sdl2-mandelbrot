@@ -4,7 +4,7 @@
 #include <chrono>
 #include <thread>
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "grid.hpp"
 #include "shading.hpp"
@@ -12,7 +12,7 @@
 std::chrono::_V2::steady_clock::time_point now();
 
 // Wrapper class for the application.
-// Due to being lazy, holds the code for SDL2.
+// Due to being lazy, holds the code for SDL3.
 class MandelbrotApplication {
 public:
     MandelbrotApplication();
@@ -26,7 +26,6 @@ private:
     unsigned int displayWidth, displayHeight;
     bool isFullscreen;
 
-    SDL_DisplayMode displayMode;
     SDL_Window *window;
     SDL_Renderer *renderer;
 
@@ -35,9 +34,9 @@ private:
     int texturePitch;
 
     SDL_Event event;
-    const uint8_t *keyboardState;
+    const bool *keyboardState;
 
-    SDL_Point mousePosition;
+    SDL_FPoint mousePosition;
 
     MandelbrotGrid mandelbrotGrid;
     std::thread calculationThread;

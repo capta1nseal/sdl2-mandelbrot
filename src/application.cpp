@@ -1,11 +1,17 @@
 #include "application.hpp"
 
-#include <SDL2/SDL_render.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_video.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_video.h>
 #include <chrono>
 #include <cmath>
 #include <thread>
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "grid.hpp"
 #include "shading.hpp"
@@ -58,24 +64,28 @@ void MandelbrotApplication::run() {
 }
 
 void MandelbrotApplication::initializeSdl() {
-    SDL_Init(SDL_INIT_EVERYTHING);
+    SDL_InitSubSystem(SDL_INIT_VIDEO);
 
-    SDL_GetCurrentDisplayMode(0, &displayMode);
+    SDL_GetMouseState(&mousePosition.x, &mousePosition.y);
+    auto mousePositionInt = SDL_Point();
+    mousePositionInt.x = mousePosition.x;
+    mousePositionInt.y = mousePosition.y;
+    auto displayID = SDL_GetDisplayForPoint(&mousePositionInt);
 
-    displayWidth = displayMode.w / 2;
-    displayHeight = displayMode.h / 2;
+    auto displayBounds = SDL_Rect();
+    SDL_GetDisplayBounds(displayID, &displayBounds);
+    displayWidth = displayBounds.w / 2;
+    displayHeight = displayBounds.h / 2;
 
     // Testing small window size, useful for valgrind.
     // displayWidth = 160;
     // displayHeight = 90;
 
     uint32_t windowFlags = SDL_WINDOW_RESIZABLE;
-    window = SDL_CreateWindow("mandelbrot", SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, displayWidth,
-                              displayHeight, windowFlags);
+    window = SDL_CreateWindow("mandelbrot", displayWidth, displayHeight,
+                              windowFlags);
 
-    uint32_t renderFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
-    renderer = SDL_CreateRenderer(window, -1, renderFlags);
+    renderer = SDL_CreateRenderer(window, NULL);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     keyboardState = SDL_GetKeyboardState(NULL);
@@ -127,21 +137,19 @@ void MandelbrotApplication::handleEvents() {
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             isRunning = false;
             break;
-        case SDL_WINDOWEVENT:
-            if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-                displayWidth = event.window.data1;
-                displayHeight = event.window.data2;
+        case SDL_EVENT_WINDOW_RESIZED:
+            displayWidth = event.window.data1;
+            displayHeight = event.window.data2;
 
-                mandelbrotGrid.resizeGrid(displayWidth, displayHeight);
+            mandelbrotGrid.resizeGrid(displayWidth, displayHeight);
 
-                initializeRenderTexture();
-            }
+            initializeRenderTexture();
             break;
-        case SDL_KEYDOWN:
-            switch (event.key.keysym.scancode) {
+        case SDL_EVENT_KEY_DOWN:
+            switch (event.key.scancode) {
             case SDL_SCANCODE_ESCAPE:
                 isRunning = false;
                 break;
@@ -149,8 +157,7 @@ void MandelbrotApplication::handleEvents() {
                 if (isFullscreen) {
                     SDL_SetWindowFullscreen(window, 0);
                 } else {
-                    SDL_SetWindowFullscreen(window,
-                                            SDL_WINDOW_FULLSCREEN_DESKTOP);
+                    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
                 }
                 isFullscreen = !isFullscreen;
                 break;
@@ -194,7 +201,7 @@ void MandelbrotApplication::handleEvents() {
                 break;
             }
             break;
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             switch (event.button.button) {
             case SDL_BUTTON_LEFT: {
                 mandelbrotGrid.zoomOnPixel(event.button.x, event.button.y);
@@ -285,7 +292,7 @@ void MandelbrotApplication::draw() {
 
     SDL_SetTextureBlendMode(renderTexture, SDL_BLENDMODE_BLEND);
 
-    SDL_RenderCopy(renderer, renderTexture, NULL, NULL);
+    SDL_RenderTexture(renderer, renderTexture, NULL, NULL);
 
     SDL_RenderPresent(renderer);
 }

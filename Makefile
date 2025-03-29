@@ -2,7 +2,7 @@ SRCDIR  = src
 BINDIR  = bin
 OBJDIR := $(BINDIR)/obj
 DEPDIR := $(BINDIR)/dep
-TARGET  = sdl2-mandelbrot
+TARGET  = sdl3-mandelbrot
 
 SRCS := $(shell find $(SRCDIR) -name "*.cpp")
 OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
@@ -13,7 +13,7 @@ CPPFLAGS     = -MMD -MP -MF $(@:$(OBJDIR)/%.o=$(DEPDIR)/%.d)
 CXXWARNFLAGS = -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wzero-as-null-pointer-constant -Wunused -Woverloaded-virtual -Wformat=2 -Werror=vla -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wnull-dereference
 # add -march=native after -O3 if you wish to optimise the code for your machine. may not run on other machines
 CXXFLAGS    := -std=c++20 -O3 $(CXXWARNFLAGS)
-LINKFLAGS    = -lSDL2 -lSDL2main
+LINKFLAGS    = -lSDL3
 
 .PHONY: build test clean build-native
 
