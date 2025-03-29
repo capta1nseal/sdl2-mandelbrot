@@ -100,6 +100,10 @@ void MandelbrotApplication::destroySdl() {
 void MandelbrotApplication::initializeGrid() {
     mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.0, 0.0, 1.0);
 
+    // nice spiral
+    // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, -0.190564,
+    // 0.668407, 38294.6);
+
     // random test location
     // mandelbrotGrid.initializeGrid(displayWidth, displayHeight, 0.260224,
     // -0.00184122, 2998.48);
@@ -267,8 +271,8 @@ void MandelbrotApplication::draw() {
                 // calculate continuous number of iterations to escape
                 escapeIterationCount =
                     (iterationGrid[x * displayHeight + y] -
-                     log2(2 *
-                          log2(magnitudeSquaredGrid[x * displayHeight + y])));
+                     log2(log2(magnitudeSquaredGrid[x * displayHeight + y]))) +
+                    1;
                 // get Lerped summed histogram for continuous histogram shading
                 histogramFactor = smoothEscapeIterationCounterSum(
                                       escapeIterationCount - 1.0) /
