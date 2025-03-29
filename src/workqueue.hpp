@@ -5,6 +5,9 @@
 #include <mutex>
 #include <tuple>
 
+// Distributes work for concurrent execution.
+// Doesn't actually store a queue of tasks, just iterates from zero up to
+// taskCount and any thread can fetch a task, which is done under mutex lock.
 class WorkQueue {
 public:
     WorkQueue();

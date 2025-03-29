@@ -209,17 +209,17 @@ void MandelbrotGrid::iterateGrid() {
         workQueue.setTaskCount(m_height);
         workQueue.setTaskLength(m_width);
 
-        unsigned int threadCount = std::thread::hardware_concurrency();
-        std::vector<std::jthread> threads;
-
         {
+            unsigned int threadCount = std::thread::hardware_concurrency();
+            std::vector<std::jthread> threads;
+
             for (unsigned int i = 0u; i < threadCount; i++) {
                 threads.push_back(
                     std::jthread(&MandelbrotGrid::rowIterator, this));
             }
         }
 
-        if (!workQueue.isAborted()) {
+        if (!workQueue.isAborted()) [[likely]] {
             m_iterationCount++;
 
             if (m_iterationCount >= m_iterationMaximum) {
