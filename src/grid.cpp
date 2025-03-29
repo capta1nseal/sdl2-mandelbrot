@@ -48,13 +48,14 @@ void MandelbrotGrid::resizeGrid(int width, int height) {
 void MandelbrotGrid::resetGrid() {
     workQueue.abortIteration();
 
-    grid.resize(m_width * m_height);
-    grid.assign(m_width * m_height, Complex(0.0, 0.0));
-
-    safe_magnitudeGrid.assign(m_width * m_height, 0.0);
+    m_grid.resize(m_width * m_height);
+    m_grid.assign(m_width * m_height, Complex(0.0, 0.0));
 
     m_iterationGrid.resize(m_width * m_height);
     m_iterationGrid.assign(m_width * m_height, 0);
+
+    m_magnitudeGrid.resize(m_width * m_height);
+    m_magnitudeGrid.assign(m_width * m_height, 0.0);
 
     m_escapeCount = 0;
     escapeIterationCounter.resize(m_iterationMaximum);
@@ -94,10 +95,7 @@ void MandelbrotGrid::getFrameData(
 
             escapeCount = m_escapeCount;
 
-            magnitudeGrid.resize(m_width * m_height);
-            for (int i = 0; i < m_width * m_height; i++) {
-                magnitudeGrid[i] = grid[i].magnitude();
-            }
+            magnitudeGrid = m_magnitudeGrid;
 
             iterationGrid = m_iterationGrid;
 
@@ -165,7 +163,7 @@ Complex MandelbrotGrid::mapToComplex(double x, double y) {
 }
 
 void MandelbrotGrid::setValueAt(int x, int y, Complex value) {
-    grid[x * m_height + y] = value;
+    m_grid[x * m_height + y] = value;
 }
 
 void MandelbrotGrid::incrementIterationGrid(int x, int y) {
@@ -181,13 +179,13 @@ void MandelbrotGrid::rowIterator() {
             if (workQueue.isAborted()) [[unlikely]] {
                 break;
             }
-            if (grid[x * m_height + y].magnitudeSquared() <=
-                (m_escapeRadius * m_escapeRadius)) {
-                grid[x * m_height + y].squareAdd(mapToComplex(x, y));
+            if (m_magnitudeGrid[x * m_height + y] <= m_escapeRadius) {
+                m_grid[x * m_height + y].squareAdd(mapToComplex(x, y));
+                m_magnitudeGrid[x * m_height + y] =
+                    m_grid[x * m_height + y].magnitude();
                 incrementIterationGrid(x, y);
 
-                if (grid[x * m_height + y].magnitudeSquared() >
-                    (m_escapeRadius * m_escapeRadius)) {
+                if (m_magnitudeGrid[x * m_height + y] > m_escapeRadius) {
                     m_escapeCount++;
                     escapeIterationCounter[m_iterationGrid[x * m_height + y] -
                                            1]++;
