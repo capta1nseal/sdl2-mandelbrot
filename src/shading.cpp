@@ -53,7 +53,7 @@ Shading::Colour Shading::shadeGreyscaleInverse(double histogramFactor,
 Shading::Colour Shading::shadeHsv(double histogramFactor, double timeCounter) {
     auto hsvColour = HsvColour{
         (1.0 - histogramFactor) * 720 + timeCounter * 90,
-        0.75 + histogramFactor / 0.25,
+        0.75 + histogramFactor * 0.25,
         1.0,
     };
     return hsvToRgb(hsvColour);
